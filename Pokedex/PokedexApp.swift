@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct PokedexApp: App {
+    @State var tabSelection: TabTypes = .pokemonList
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -25,8 +26,20 @@ struct PokedexApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TabView(selection: $tabSelection) {
+                Tab("Browse", systemImage: "list.bullet", value: .pokemonList) {
+                    PokemonListView()
+                }
+                
+                Tab("Favourites", systemImage: "heart.fill", value: .pokemonFavorites) {
+                    ContentView()
+                }
+            }
         }
         .modelContainer(sharedModelContainer)
     }
+}
+
+enum TabTypes {
+    case pokemonList, pokemonFavorites
 }

@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BA2B472F2DCF9B6F005B198E /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = BA2B472E2DCF9B6F005B198E /* OpenAPIRuntime */; };
+		BA2B47322DCF9BC0005B198E /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = BA2B47312DCF9BC0005B198E /* OpenAPIURLSession */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BADA2A442DCF711400CD7C64 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,14 +29,41 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BA51AE752DD0EEBA0091809C /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		BADA2A332DCF711200CD7C64 /* Pokedex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pokedex.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BADA2A432DCF711400CD7C64 /* PokedexTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokedexTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BADA2A4D2DCF711400CD7C64 /* PokedexUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokedexUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BA2B47352DCF9D90005B198E /* Exceptions for "Pokedex" folder in "Pokedex" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"openapi-generator-config.yaml",
+				openapi.yaml,
+			);
+			target = BADA2A322DCF711200CD7C64 /* Pokedex */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		BA2B472A2DCF9AC2005B198E /* Exceptions for "Pokedex" folder in "Compile Sources" phase from "Pokedex" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = BADA2A2F2DCF711200CD7C64 /* Sources */;
+			membershipExceptions = (
+				"openapi-generator-config.yaml",
+				openapi.yaml,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BADA2A352DCF711200CD7C64 /* Pokedex */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BA2B47352DCF9D90005B198E /* Exceptions for "Pokedex" folder in "Pokedex" target */,
+				BA2B472A2DCF9AC2005B198E /* Exceptions for "Pokedex" folder in "Compile Sources" phase from "Pokedex" target */,
+			);
 			path = Pokedex;
 			sourceTree = "<group>";
 		};
@@ -52,6 +84,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA2B47322DCF9BC0005B198E /* OpenAPIURLSession in Frameworks */,
+				BA2B472F2DCF9B6F005B198E /* OpenAPIRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +109,7 @@
 		BADA2A2A2DCF711200CD7C64 = {
 			isa = PBXGroup;
 			children = (
+				BA51AE752DD0EEBA0091809C /* .gitignore */,
 				BADA2A352DCF711200CD7C64 /* Pokedex */,
 				BADA2A462DCF711400CD7C64 /* PokedexTests */,
 				BADA2A502DCF711400CD7C64 /* PokedexUITests */,
@@ -106,12 +141,15 @@
 			buildRules = (
 			);
 			dependencies = (
+				BA2B47342DCF9BE3005B198E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				BADA2A352DCF711200CD7C64 /* Pokedex */,
 			);
 			name = Pokedex;
 			packageProductDependencies = (
+				BA2B472E2DCF9B6F005B198E /* OpenAPIRuntime */,
+				BA2B47312DCF9BC0005B198E /* OpenAPIURLSession */,
 			);
 			productName = Pokedex;
 			productReference = BADA2A332DCF711200CD7C64 /* Pokedex.app */;
@@ -195,6 +233,11 @@
 			);
 			mainGroup = BADA2A2A2DCF711200CD7C64;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BA2B472B2DCF9B2E005B198E /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
+				BA2B472D2DCF9B6F005B198E /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
+				BA2B47302DCF9BC0005B198E /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BADA2A342DCF711200CD7C64 /* Products */;
 			projectDirPath = "";
@@ -256,6 +299,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		BA2B47342DCF9BE3005B198E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = BA2B47332DCF9BE3005B198E /* OpenAPIGenerator */;
+		};
 		BADA2A452DCF711400CD7C64 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BADA2A322DCF711200CD7C64 /* Pokedex */;
@@ -389,6 +436,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Pokedex/Pokedex.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -403,19 +451,20 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jonathan.Pokedex;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.4;
 			};
 			name = Debug;
@@ -426,6 +475,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Pokedex/Pokedex.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -440,19 +490,20 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jonathan.Pokedex;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.4;
 			};
 			name = Release;
@@ -583,6 +634,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BA2B472B2DCF9B2E005B198E /* XCRemoteSwiftPackageReference "swift-openapi-generator" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-generator";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.7.2;
+			};
+		};
+		BA2B472D2DCF9B6F005B198E /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-runtime";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.2;
+			};
+		};
+		BA2B47302DCF9BC0005B198E /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-urlsession";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BA2B472E2DCF9B6F005B198E /* OpenAPIRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA2B472D2DCF9B6F005B198E /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
+			productName = OpenAPIRuntime;
+		};
+		BA2B47312DCF9BC0005B198E /* OpenAPIURLSession */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA2B47302DCF9BC0005B198E /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
+			productName = OpenAPIURLSession;
+		};
+		BA2B47332DCF9BE3005B198E /* OpenAPIGenerator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA2B472B2DCF9B2E005B198E /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
+			productName = "plugin:OpenAPIGenerator";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BADA2A2B2DCF711200CD7C64 /* Project object */;
 }
