@@ -10,16 +10,27 @@ import SwiftUI
 struct PokemonDetailView: View {
     let pokemonId: Int
     let animation: Namespace.ID
-    @Environment(\.dismiss) var dismiss
+    @State var imageURL: URL?
+    
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
                 VStack {
+                    AsyncImage(url: imageURL, content: { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 200, height: 200)
+                    }, placeholder: {
+                        ProgressView()
+                    })
+                    .padding(.top)
+                    .navigationTransition(.zoom(sourceID: pokemonId, in: animation))
                     Text("Details for Pokemon ID: \(pokemonId)")
                         .font(.system(.headline, design: .rounded, weight: .heavy))
                         .frame(maxWidth: .infinity)
-                        .navigationTransition(.zoom(sourceID: pokemonId, in: animation))
                 }
             }
             
@@ -33,12 +44,13 @@ struct PokemonDetailView: View {
                 .padding(.horizontal)
         }
         .navigationTitle("Pokemon #\(pokemonId)")
-        .navigationBarHidden(true)
+        .toolbarVisibility(.hidden, for: .navigationBar)
     }
 }
 
 #Preview {
+    @Previewable @Namespace var animation
     NavigationStack {
-        PokemonDetailView(pokemonId: 1, animation: Namespace.init().wrappedValue)
+        PokemonDetailView(pokemonId: 1, animation: animation, imageURL: getPokemonSpriteURL(ID: 1))
     }
 }
