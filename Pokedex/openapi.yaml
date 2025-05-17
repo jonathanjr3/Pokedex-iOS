@@ -7645,7 +7645,6 @@ components:
                 items:
                   type: object
                   required:
-                    - ability
                     - is_hidden
                     - slot
                   properties:
@@ -7698,54 +7697,56 @@ components:
             $ref: "#/components/schemas/PokemonGameIndex"
           readOnly: true
         held_items:
-          type: object
-          required:
-            - item
-            - version_details
-          properties:
-            item:
-              type: object
-              required:
-                - name
-                - url
-              properties:
-                name:
-                  type: string
-                  examples:
-                    - soft-sand
-                url:
-                  type: string
-                  format: uri
-                  examples:
-                    - https://pokeapi.co/api/v2/item/214/
-            version_details:
-              type: array
-              items:
+          type: array
+          items:
+            type: object
+            required:
+              - item
+              - version_details
+            properties:
+              item:
                 type: object
                 required:
-                  - rarity
-                  - version
+                  - name
+                  - url
                 properties:
-                  rarity:
-                    type: integer
-                    format: int32
+                  name:
+                    type: string
                     examples:
-                      - 5
-                  version:
-                    type: object
-                    required:
-                      - name
-                      - url
-                    properties:
-                      name:
-                        type: string
-                        examples:
-                          - diamond
-                      url:
-                        type: string
-                        format: uri
-                        examples:
-                          - https://pokeapi.co/api/v2/version/12/
+                      - soft-sand
+                  url:
+                    type: string
+                    format: uri
+                    examples:
+                      - https://pokeapi.co/api/v2/item/214/
+              version_details:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - rarity
+                    - version
+                  properties:
+                    rarity:
+                      type: integer
+                      format: int32
+                      examples:
+                        - 5
+                    version:
+                      type: object
+                      required:
+                        - name
+                        - url
+                      properties:
+                        name:
+                          type: string
+                          examples:
+                            - diamond
+                        url:
+                          type: string
+                          format: uri
+                          examples:
+                            - https://pokeapi.co/api/v2/version/12/
           readOnly: true
         location_area_encounters:
           type: string
@@ -7829,6 +7830,16 @@ components:
               type: string
               format: uri
               exmaple: https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/1.png
+            versions:
+              type: object
+              description: "Different versions of Pokemon sprites"
+              nullable: true
+              readOnly: true
+            other:
+              type: object
+              description: "Other sprite variations"
+              nullable: true
+              readOnly: true
           additionalProperties:
             type: string
             format: uri
@@ -8352,6 +8363,7 @@ components:
         shape:
           $ref: "#/components/schemas/PokemonShapeSummary"
         evolves_from_species:
+          nullable: true
           $ref: "#/components/schemas/PokemonSpeciesSummary"
         evolution_chain:
           $ref: "#/components/schemas/EvolutionChainSummary"

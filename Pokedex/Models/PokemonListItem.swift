@@ -16,10 +16,10 @@ struct PokemonListItem: Identifiable, Hashable {
     var types: [PokemonTypeInfo] = []
 
     init(pokemonSummary: Components.Schemas.PokemonSummary) {
-        self.id = extractID(from: pokemonSummary.url) ?? 0
+        self.id = Utilities.extractID(from: pokemonSummary.url) ?? 0
         self.name = pokemonSummary.name.capitalized
-        if let id = extractID(from: pokemonSummary.url) {
-            self.spriteURL = URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(id).png")
+        if let id = Utilities.extractID(from: pokemonSummary.url) {
+            self.spriteURL = Utilities.getPokemonSpriteURL(forPokemonID: id)
         } else {
             self.spriteURL = nil
         }
@@ -29,8 +29,4 @@ struct PokemonListItem: Identifiable, Hashable {
         let summary = Components.Schemas.PokemonSummary(name: "Pikachu", url: "https://pokeapi.co/api/v2/pokemon/25/")
         return PokemonListItem(pokemonSummary: summary)
     }
-}
-
-func getPokemonSpriteURL(ID: Int) -> URL? {
-    URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(ID).png")
 }

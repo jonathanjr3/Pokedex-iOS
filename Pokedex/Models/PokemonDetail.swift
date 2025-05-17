@@ -26,7 +26,7 @@ struct PokemonDetail: Identifiable {
     init(id: Int, name: String, spriteURL: URL? = nil, height: Int?, weight: Int?) {
         self.id = id
         self.name = name.capitalized
-        self.spriteURL = spriteURL ?? URL(string: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(id).png")
+        self.spriteURL = spriteURL ?? Utilities.getPokemonSpriteURL(forPokemonID: id)
         self.height = Double(height ?? 0) / 10.0 // Convert to meters
         self.weight = Double(weight ?? 0) / 10.0 // Convert to kg
     }
