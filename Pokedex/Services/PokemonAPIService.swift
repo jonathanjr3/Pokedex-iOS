@@ -34,6 +34,7 @@ final actor PokemonAPIService {
                 query: .init(limit: limit, offset: offset)
             )
         } catch {
+            print("Error in pokemon list: \(error)")
             throw .unknownError(message: error.localizedDescription)
         }
         switch response {
@@ -60,6 +61,7 @@ final actor PokemonAPIService {
         do {
             response = try await client.pokemonRetrieve(path: .init(id: id))
         } catch {
+            print("Error in pokemon detail: \(error)")
             throw .unknownError(message: error.localizedDescription)
         }
         switch response {
@@ -87,6 +89,7 @@ final actor PokemonAPIService {
         do {
             response = try await client.typeRetrieve(path: .init(id: id))
         } catch {
+            print("Error in type detail: \(error)")
             throw .unknownError(message: error.localizedDescription)
         }
         switch response {
@@ -115,6 +118,7 @@ final actor PokemonAPIService {
                 path: .init(id: id)
             )
         } catch {
+            print("Error in species detail: \(error)")
             throw .unknownError(message: error.localizedDescription)
         }
         switch response {

@@ -54,7 +54,7 @@ public struct PokemonListView: View {
                 items.isEmpty
             {
                 ContentUnavailableView(
-                    "Oops! Something went wrong.",
+                    "Something went wrong.",
                     systemImage: "wifi.exclamationmark",
                     description: Text(errorMessage)
                 )

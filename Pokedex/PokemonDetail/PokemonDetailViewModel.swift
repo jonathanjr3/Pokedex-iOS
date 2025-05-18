@@ -4,18 +4,27 @@
 //
 //  Created by Jonathan Rajya on 16/05/2025.
 //
-
-import Combine
 import SwiftUI
 
 @Observable
 final class PokemonDetailViewModel {
-    var pokemonDetail: PokemonDetail?
-    var isLoading: Bool = false
-    var errorMessage: String? = nil
+    private(set) var pokemonDetail: PokemonDetail = .init(
+        id: -1,
+        name: "Bulbasaur",
+        height: 20,
+        weight: 20
+    )
+    private(set) var isLoading: Bool = false
+    private(set) var errorMessage: String? = nil
+    private(set) var meshGradientColours: [Color] = []
+    private(set) var meshGradientPoints: [SIMD2<Float>] = []
+    var meshGradientRows: Int {
+        gradientColours.count
+    }
 
     private let pokemonId: Int
     private let apiService: PokemonAPIService
+    private var gradientColours: [Color] = []
 
     init(
         pokemonId: Int,
@@ -51,17 +60,18 @@ final class PokemonDetailViewModel {
                     try await apiService.getSpeciesDetails(
                         id: String(pokemonId)
                     )
-                pokemonDetail?.dominantColor =
+                pokemonDetail.dominantColor =
                     mapPokemonColorNameToSwiftUIColor(
                         pokemonSpeciesDetail.color.name
                     )
+                gradientColours.append(pokemonDetail.dominantColor)
             } catch {
                 print(
                     "Error occurred while retrieving pokemon species details in detail view model: \(error)"
                 )
             }
 
-            pokemonDetail?.types = apiPokemonDetail.types.compactMap {
+            pokemonDetail.types = apiPokemonDetail.types.compactMap {
                 apiTypeSlot in
                 let typeID = Utilities.extractID(from: apiTypeSlot._type.url)
                 return PokemonTypeInfo(
@@ -73,7 +83,11 @@ final class PokemonDetailViewModel {
                     name: apiTypeSlot._type.name
                 )
             }
-
+            pokemonDetail.types.forEach { typeInfo in
+                gradientColours.append(typeInfo.color)
+            }
+            meshGradientPoints = Utilities.generateRandomCoordinates(rows: gradientColours.count, columns: 3)
+            meshGradientColours = generateColourArray(from: gradientColours)
         } catch {
             errorMessage =
                 "Failed to load Pokémon details, try again later."
@@ -100,5 +114,10 @@ final class PokemonDetailViewModel {
         case "yellow": return .yellow
         default: return .gray
         }
+    }
+
+    private func generateColourArray(from inputColors: [Color]) -> [Color] {
+        // Using flatMap to repeat each color 3 times efficiently
+        return inputColors.flatMap { Array(repeating: $0, count: 3) }
     }
 }

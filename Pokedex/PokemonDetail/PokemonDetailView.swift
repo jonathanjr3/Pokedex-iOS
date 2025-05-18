@@ -45,8 +45,14 @@ struct PokemonDetailView: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            viewModel.pokemonDetail?.dominantColor.opacity(0.5)
-                .ignoresSafeArea()
+            MeshGradient(
+                width: 3,
+                height: viewModel.meshGradientRows,
+                points: viewModel.meshGradientPoints,
+                colors: viewModel.meshGradientColours
+            )
+            .ignoresSafeArea()
+            
             ScrollView {
                 VStack(spacing: 0) {
                     AsyncImage(
@@ -77,7 +83,7 @@ struct PokemonDetailView: View {
                         .zoom(sourceID: pokemonID, in: animation)
                     )
 
-                    if viewModel.isLoading && viewModel.pokemonDetail == nil {
+                    if viewModel.isLoading && viewModel.pokemonDetail.id == -1 {
                         ProgressView("Loading details...")
                             .frame(
                                 maxWidth: .infinity,
@@ -85,19 +91,25 @@ struct PokemonDetailView: View {
                                 alignment: .center
                             )
                             .padding(.top, 200)
-                    } else if let detail = viewModel.pokemonDetail {
+                    } else if viewModel.pokemonDetail.id != -1 {
                         VStack(spacing: 20) {
-                            Text(detail.name)
+                            Text(viewModel.pokemonDetail.name)
                                 .font(.system(size: 34, weight: .bold))
                                 .foregroundColor(Color.primary)
 
-                            Text(String(format: "#%03d", detail.id))
-                                .font(.title2)
-                                .fontWeight(.medium)
-                                .foregroundColor(.secondary)
+                            Text(
+                                String(
+                                    format: "#%03d",
+                                    viewModel.pokemonDetail.id
+                                )
+                            )
+                            .font(.title2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
 
                             HStack {
-                                ForEach(detail.types) { typeInfo in
+                                ForEach(viewModel.pokemonDetail.types) {
+                                    typeInfo in
                                     Text(typeInfo.name.capitalized)
                                         .font(.caption)
                                         .fontWeight(.semibold)
@@ -118,14 +130,14 @@ struct PokemonDetailView: View {
                                     label: "Height",
                                     value: String(
                                         format: "%.1f m",
-                                        detail.height
+                                        viewModel.pokemonDetail.height
                                     )
                                 )
                                 StatPill(
                                     label: "Weight",
                                     value: String(
                                         format: "%.1f kg",
-                                        detail.weight
+                                        viewModel.pokemonDetail.weight
                                     )
                                 )
                             }
@@ -148,10 +160,10 @@ struct PokemonDetailView: View {
                 }
                 .padding(.trailing)
         }
-        .navigationTitle("Pokemon #\(viewModel.pokemonDetail?.id ?? 0)")
+        .navigationTitle("Pokemon #\(viewModel.pokemonDetail.id)")
         .toolbarVisibility(.hidden, for: .navigationBar)
         .task {
-            if viewModel.pokemonDetail == nil {
+            if viewModel.pokemonDetail.id == -1 {
                 await viewModel.fetchPokemonDetails()
             }
         }
@@ -164,7 +176,7 @@ struct PokemonDetailView: View {
         PokemonDetailView(
             pokemonID: 25,
             animation: animation,
-            apiService: PokemonAPIService(apiClient: MockPokemonAPIClient())
+            apiService: PokemonAPIService()
         )
     }
 }
