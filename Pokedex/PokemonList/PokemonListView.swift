@@ -5,32 +5,43 @@
 //  Created by Jonathan Rajya on 15/05/2025.
 //
 
+import Foundation
 import SwiftUI
-import OpenAPIRuntime
 
-struct PokemonListView: View {
+public struct PokemonListView: View {
     @State private var viewModel: PokemonListViewModel
     @Namespace var animation
 
     // For grid layout
-    private let gridItems: [GridItem] = Array(repeating: .init(.flexible(), spacing: 16), count: 2)
+    private let gridItems: [GridItem] = Array(
+        repeating: .init(.flexible(), spacing: 16),
+        count: 2
+    )
 
-    init(apiService: PokemonAPIServiceProtocol = PokemonAPIService.shared) {
+    init(apiService: PokemonAPIService = .shared) {
         viewModel = PokemonListViewModel(apiService: apiService)
     }
 
-    var body: some View {
+    public var body: some View {
         List {
-            ForEach(viewModel.pokemonListItems) { pokemonItem in
-                NavigationLink {
-                    PokemonDetailView(pokemonId: pokemonItem.id, animation: animation, imageURL: getPokemonSpriteURL(ID: pokemonItem.id))
-                } label: {
-                    PokemonListRow(pokemonItem: pokemonItem, animation: animation)
+            let items: [PokemonListItem] =
+                viewModel.isSearching
+                ? viewModel.searchResults
+                : viewModel.allPokemonSummaries.map {
+                    PokemonListItem(pokemonSummary: $0)
                 }
-                .onAppear {
-                    Task {
-                        await viewModel.fetchMorePokemonIfNeeded(currentItem: pokemonItem)
-                    }
+            ForEach(items) { pokemonItem in
+                NavigationLink {
+                    PokemonDetailView(
+                        pokemonID: pokemonItem.id,
+                        pokemonName: pokemonItem.name,
+                        animation: animation
+                    )
+                } label: {
+                    PokemonListRow(
+                        pokemonItem: pokemonItem,
+                        animation: animation
+                    )
                 }
             }
 
@@ -43,32 +54,34 @@ struct PokemonListView: View {
                 }
             }
 
-            if viewModel.canLoadMore && !viewModel.isLoading && !viewModel.pokemonListItems.isEmpty {
-                HStack {
-                    Spacer()
-                    Text("Loading more...")
-                    Spacer()
-                }
-                .onAppear {
-                    Task {
-                         await viewModel.fetchMorePokemonIfNeeded(currentItem: nil)
+            if let errorMessage = viewModel.errorMessage,
+                items.isEmpty
+            {
+                ContentUnavailableView {
+                    Label(
+                        "Something went wrong",
+                        systemImage: "wifi.exclamationmark"
+                    )
+                } description: {
+                    Text(errorMessage)
+                } actions: {
+                    Button("Retry", systemImage: "arrow.clockwise") {
+                        Task {
+                            await viewModel.fetchAllPokemonSummariesIfNeeded()
+                        }
                     }
+                    .buttonStyle(.bordered)
                 }
-            }
-            
-            if let errorMessage = viewModel.errorMessage, viewModel.pokemonListItems.isEmpty {
-                 ContentUnavailableView(
-                     "Oops! Something went wrong.",
-                     systemImage: "wifi.exclamationmark",
-                     description: Text(errorMessage)
-                 )
             }
         }
-//        .listStyle(.plain)
+        .searchable(
+            text: $viewModel.searchQuery,
+            prompt: "Search Pokémon by name or id"
+        )
         .onAppear {
-            if viewModel.pokemonListItems.isEmpty {
+            if viewModel.allPokemonSummaries.isEmpty {
                 Task {
-                    await viewModel.fetchInitialPokemonList()
+                    await viewModel.fetchAllPokemonSummariesIfNeeded()
                 }
             }
         }
@@ -88,8 +101,8 @@ struct PokemonListRow: View {
                         .frame(width: 70, height: 70)
                 case .success(let image):
                     image.resizable()
-                         .aspectRatio(contentMode: .fit)
-                         .frame(width: 70, height: 70)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 70, height: 70)
                 case .failure:
                     Image(systemName: "questionmark.diamond")
                         .resizable()
@@ -101,10 +114,7 @@ struct PokemonListRow: View {
                     EmptyView()
                 }
             }
-            .matchedTransitionSource(id: pokemonItem.id, in: animation) { config in
-                config
-                    .background(.clear)
-            }
+            .matchedTransitionSource(id: pokemonItem.id, in: animation)
 
             VStack(alignment: .leading) {
                 Text(pokemonItem.name)
@@ -122,7 +132,9 @@ struct PokemonListRow: View {
 // Preview
 #Preview {
     NavigationStack {
-        PokemonListView(apiService: MockPokemonAPIService())
-            .navigationTitle("Pokedex")
+        PokemonListView(
+            apiService: PokemonAPIService(apiClient: MockPokemonAPIClient())
+        )
+        .navigationTitle("Pokedex")
     }
 }

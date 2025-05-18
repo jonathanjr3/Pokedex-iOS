@@ -12,5 +12,5 @@ struct PokemonAbility: Identifiable, Hashable {
     let id = UUID()
     let name: String
     let isHidden: Bool
-    var effectDescription: String?
+    var effectDescription: String? = "No effect description available"
 }

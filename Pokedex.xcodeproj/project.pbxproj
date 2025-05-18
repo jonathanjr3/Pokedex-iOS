@@ -7,8 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BA2B472F2DCF9B6F005B198E /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = BA2B472E2DCF9B6F005B198E /* OpenAPIRuntime */; };
-		BA2B47322DCF9BC0005B198E /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = BA2B47312DCF9BC0005B198E /* OpenAPIURLSession */; };
+		BA3316C72DDA480600C6509A /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = BA3316C62DDA480600C6509A /* Flow */; };
+		BA35B1A12DD8910600A230E7 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = BA35B1A02DD8910600A230E7 /* OpenAPIURLSession */; };
+		BA35B1A52DD8927F00A230E7 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = BA35B1A42DD8927F00A230E7 /* OpenAPIRuntime */; };
+		BA5EC7172DD9FD1600148BAE /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = BA5EC7162DD9FD1600148BAE /* Shimmer */; };
+		BAC321C52DD8D73900F425E8 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = BAC321C42DD8D73900F425E8 /* AsyncAlgorithms */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +42,8 @@
 		BA2B47352DCF9D90005B198E /* Exceptions for "Pokedex" folder in "Pokedex" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"Extensions/View+Debounce.swift",
+				"Extensions/View+Utilities.swift",
 				"openapi-generator-config.yaml",
 				openapi.yaml,
 			);
@@ -47,12 +52,20 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		BA2B472A2DCF9AC2005B198E /* Exceptions for "Pokedex" folder in "Compile Sources" phase from "Pokedex" target */ = {
+		BA35B1A92DD8929900A230E7 /* Exceptions for "Pokedex" folder in "Compile Sources" phase from "Pokedex" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			buildPhase = BADA2A2F2DCF711200CD7C64 /* Sources */;
 			membershipExceptions = (
 				"openapi-generator-config.yaml",
 				openapi.yaml,
+			);
+		};
+		BAC321C02DD8D66F00F425E8 /* Exceptions for "Pokedex" folder in "Copy Bundle Resources" phase from "Pokedex" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = BADA2A312DCF711200CD7C64 /* Resources */;
+			membershipExceptions = (
+				"Extensions/View+Debounce.swift",
+				"Extensions/View+Utilities.swift",
 			);
 		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
@@ -62,7 +75,8 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				BA2B47352DCF9D90005B198E /* Exceptions for "Pokedex" folder in "Pokedex" target */,
-				BA2B472A2DCF9AC2005B198E /* Exceptions for "Pokedex" folder in "Compile Sources" phase from "Pokedex" target */,
+				BA35B1A92DD8929900A230E7 /* Exceptions for "Pokedex" folder in "Compile Sources" phase from "Pokedex" target */,
+				BAC321C02DD8D66F00F425E8 /* Exceptions for "Pokedex" folder in "Copy Bundle Resources" phase from "Pokedex" target */,
 			);
 			path = Pokedex;
 			sourceTree = "<group>";
@@ -84,8 +98,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BA2B47322DCF9BC0005B198E /* OpenAPIURLSession in Frameworks */,
-				BA2B472F2DCF9B6F005B198E /* OpenAPIRuntime in Frameworks */,
+				BA5EC7172DD9FD1600148BAE /* Shimmer in Frameworks */,
+				BA3316C72DDA480600C6509A /* Flow in Frameworks */,
+				BA35B1A52DD8927F00A230E7 /* OpenAPIRuntime in Frameworks */,
+				BA35B1A12DD8910600A230E7 /* OpenAPIURLSession in Frameworks */,
+				BAC321C52DD8D73900F425E8 /* AsyncAlgorithms in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,15 +158,18 @@
 			buildRules = (
 			);
 			dependencies = (
-				BA2B47342DCF9BE3005B198E /* PBXTargetDependency */,
+				BA35B1A72DD8928C00A230E7 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				BADA2A352DCF711200CD7C64 /* Pokedex */,
 			);
 			name = Pokedex;
 			packageProductDependencies = (
-				BA2B472E2DCF9B6F005B198E /* OpenAPIRuntime */,
-				BA2B47312DCF9BC0005B198E /* OpenAPIURLSession */,
+				BA35B1A02DD8910600A230E7 /* OpenAPIURLSession */,
+				BA35B1A42DD8927F00A230E7 /* OpenAPIRuntime */,
+				BAC321C42DD8D73900F425E8 /* AsyncAlgorithms */,
+				BA5EC7162DD9FD1600148BAE /* Shimmer */,
+				BA3316C62DDA480600C6509A /* Flow */,
 			);
 			productName = Pokedex;
 			productReference = BADA2A332DCF711200CD7C64 /* Pokedex.app */;
@@ -234,9 +254,12 @@
 			mainGroup = BADA2A2A2DCF711200CD7C64;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BA2B472B2DCF9B2E005B198E /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
-				BA2B472D2DCF9B6F005B198E /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
-				BA2B47302DCF9BC0005B198E /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
+				BA35B19F2DD8910600A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
+				BA35B1A22DD8926400A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
+				BA35B1A32DD8927F00A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
+				BAC321C32DD8D73900F425E8 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
+				BA5EC7152DD9FD1600148BAE /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
+				BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BADA2A342DCF711200CD7C64 /* Products */;
@@ -299,9 +322,9 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		BA2B47342DCF9BE3005B198E /* PBXTargetDependency */ = {
+		BA35B1A72DD8928C00A230E7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = BA2B47332DCF9BE3005B198E /* OpenAPIGenerator */;
+			productRef = BA35B1A62DD8928C00A230E7 /* OpenAPIGenerator */;
 		};
 		BADA2A452DCF711400CD7C64 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -640,23 +663,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		BA2B472B2DCF9B2E005B198E /* XCRemoteSwiftPackageReference "swift-openapi-generator" */ = {
+		BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-openapi-generator";
+			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.7.2;
+				minimumVersion = 3.0.2;
 			};
 		};
-		BA2B472D2DCF9B6F005B198E /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-openapi-runtime";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.8.2;
-			};
-		};
-		BA2B47302DCF9BC0005B198E /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
+		BA35B19F2DD8910600A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-openapi-urlsession";
 			requirement = {
@@ -664,23 +679,70 @@
 				minimumVersion = 1.1.0;
 			};
 		};
+		BA35B1A22DD8926400A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-generator";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.7.2;
+			};
+		};
+		BA35B1A32DD8927F00A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-runtime";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.2;
+			};
+		};
+		BA5EC7152DD9FD1600148BAE /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/markiv/SwiftUI-Shimmer.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.1;
+			};
+		};
+		BAC321C32DD8D73900F425E8 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-async-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BA2B472E2DCF9B6F005B198E /* OpenAPIRuntime */ = {
+		BA3316C62DDA480600C6509A /* Flow */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BA2B472D2DCF9B6F005B198E /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
-			productName = OpenAPIRuntime;
+			package = BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;
+			productName = Flow;
 		};
-		BA2B47312DCF9BC0005B198E /* OpenAPIURLSession */ = {
+		BA35B1A02DD8910600A230E7 /* OpenAPIURLSession */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BA2B47302DCF9BC0005B198E /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
+			package = BA35B19F2DD8910600A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
 			productName = OpenAPIURLSession;
 		};
-		BA2B47332DCF9BE3005B198E /* OpenAPIGenerator */ = {
+		BA35B1A42DD8927F00A230E7 /* OpenAPIRuntime */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BA2B472B2DCF9B2E005B198E /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
+			package = BA35B1A32DD8927F00A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
+			productName = OpenAPIRuntime;
+		};
+		BA35B1A62DD8928C00A230E7 /* OpenAPIGenerator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA35B1A22DD8926400A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
 			productName = "plugin:OpenAPIGenerator";
+		};
+		BA5EC7162DD9FD1600148BAE /* Shimmer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA5EC7152DD9FD1600148BAE /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */;
+			productName = Shimmer;
+		};
+		BAC321C42DD8D73900F425E8 /* AsyncAlgorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BAC321C32DD8D73900F425E8 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */;
+			productName = AsyncAlgorithms;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

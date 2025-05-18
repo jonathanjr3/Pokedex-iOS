@@ -1,4 +1,11 @@
 generate:
   - types
   - client
+filter:
+    operations:
+        - pokemon_list
+        - pokemon_retrieve
+        - type_retrieve
+        - pokemon_species_retrieve
+        - ability_retrieve
 namingStrategy: idiomatic
