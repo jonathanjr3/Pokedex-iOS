@@ -5,6 +5,7 @@
 //  Created by Jonathan Rajya on 11/05/2025.
 //
 
+import Flow
 import Shimmer
 import SwiftUI
 
@@ -52,7 +53,8 @@ struct PokemonDetailView: View {
                 width: 3,
                 height: viewModel.meshGradientRows,
                 points: viewModel.meshGradientPoints,
-                colors: viewModel.meshGradientColours
+                colors: viewModel.meshGradientColours,
+                background: Color.accentColor
             )
             .ignoresSafeArea()
             .animation(.smooth, value: viewModel.meshGradientPoints)
@@ -82,24 +84,39 @@ struct PokemonDetailView: View {
                         }
                     }
                     .frame(width: 200, height: 200)
-                    .padding(.top, 60)
+                    .padding(.top, 40)
                     .navigationTransition(
                         .zoom(sourceID: pokemonID, in: animation)
                     )
-                    VStack(spacing: 20) {
-                        Text(pokemonName)
-                            .font(.system(size: 34, weight: .bold))
-                            .foregroundColor(Color.primary)
-
-                        Text(
-                            String(
-                                format: "#%03d",
-                                pokemonID
+                    VStack(alignment: .leading, spacing: 24) {
+                        HStack {
+                            Text(pokemonName)
+                                .font(
+                                    .system(
+                                        size: 34,
+                                        weight: .bold,
+                                        design: .rounded
+                                    )
+                                )
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Text(
+                                String(
+                                    format: "#%03d",
+                                    pokemonID
+                                )
                             )
+                            .font(.title2)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
+                        .background(
+                            Capsule()
+                                .fill(.ultraThinMaterial)
                         )
-                        .font(.title2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
 
                         if viewModel.errorOccurred {
                             contentUnavailableView
@@ -107,55 +124,164 @@ struct PokemonDetailView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .padding(.horizontal)
                         } else {
-                            HStack {
-                                ForEach(viewModel.pokemonDetail.types) {
-                                    typeInfo in
-                                    Text(typeInfo.name.capitalized)
-                                        .font(.caption)
-                                        .fontWeight(.semibold)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(
-                                            typeInfo.color
-                                                .opacity(0.8)
-                                        )
-                                        .foregroundColor(.white)
-                                        .clipShape(Capsule())
+                            Group {
+                                // Types section
+                                SectionView(title: "Types") {
+                                    HStack {
+                                        if viewModel.isLoading
+                                            && viewModel.pokemonDetail.types
+                                                .isEmpty
+                                        {
+                                            ForEach(0..<2) { _ in
+                                                TypePillPlaceholder()
+                                            }
+                                        } else if viewModel.pokemonDetail.types
+                                            .isEmpty
+                                        {
+                                            Text("No types found.")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                        } else {
+                                            ForEach(
+                                                viewModel.pokemonDetail.types
+                                            ) { typeInfo in
+                                                TypePill(typeInfo: typeInfo)
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                            .redacted(
-                                reason: viewModel.isLoading ? .placeholder : []
-                            )
-                            .shimmering(active: viewModel.isLoading)
+                                // Description Section
+                                SectionView(title: "Description") {
+                                    Text(viewModel.pokemonDetail.description)
+                                        .font(.body)
+                                        .fontDesign(.rounded)
+                                        .lineLimit(nil)
+                                        .fixedSize(
+                                            horizontal: false,
+                                            vertical: true
+                                        )
+                                }
+                                .redacted(
+                                    reason: viewModel.isLoading
+                                        && viewModel.pokemonDetail.description
+                                            .isEmpty
+                                        ? .placeholder : []
+                                )
+                                .shimmering(
+                                    active: viewModel.isLoading
+                                        && viewModel.pokemonDetail.description
+                                            .isEmpty
+                                )
+                                // Physical Attributes Section
+                                SectionView(title: "Physical Attributes") {
+                                    HStack {
+                                        InfoItem(
+                                            label: "Height",
+                                            value: String(
+                                                format: "%.1f m",
+                                                viewModel.pokemonDetail.height
+                                            ),
+                                            systemImage: "ruler.fill"
+                                        )
+                                        Spacer()
+                                        InfoItem(
+                                            label: "Weight",
+                                            value: String(
+                                                format: "%.1f kg",
+                                                viewModel.pokemonDetail.weight
+                                            ),
+                                            systemImage: "scalemass.fill"
+                                        )
+                                        Spacer()
+                                        GenderView(
+                                            genderProbabilities: viewModel
+                                                .pokemonDetail
+                                                .genderProbabilities
+                                        )
+                                    }
+                                }
+                                .redacted(
+                                    reason: viewModel.isLoading
+                                        && viewModel.pokemonDetail.height == 0
+                                        ? .placeholder : []
+                                )
+                                .shimmering(
+                                    active: viewModel.isLoading
+                                        && viewModel.pokemonDetail.height == 0
+                                )
+                                // Abilities Section
+                                SectionView(title: "Abilities") {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        if viewModel.isLoading
+                                            && viewModel.pokemonDetail.abilities
+                                                .isEmpty
+                                        {
+                                            Text("Loading abilities...")
+                                                .font(.caption)
+                                                .shimmering()
+                                        } else if viewModel.pokemonDetail
+                                            .abilities.isEmpty
+                                        {
+                                            Text("No abilities found.")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                        } else {
+                                            ForEach(
+                                                viewModel.pokemonDetail
+                                                    .abilities
+                                            ) { ability in
+                                                AbilityRow(ability: ability)
+                                            }
+                                        }
+                                    }
+                                }
+                                // Base Stats Section
+                                SectionView(title: "Base Stats") {
+                                    VStack(spacing: 8) {
+                                        if viewModel.isLoading
+                                            && viewModel.pokemonDetail.stats
+                                                .isEmpty
+                                        {
+                                            ForEach(0..<6) { _ in
+                                                StatRowPlaceholder()
+                                            }
+                                        } else if viewModel.pokemonDetail.stats
+                                            .isEmpty
+                                        {
+                                            Text("No stats found.").font(
+                                                .subheadline
+                                            ).foregroundColor(.secondary)
+                                        } else {
+                                            ForEach(
+                                                viewModel.pokemonDetail.stats
+                                            ) { stat in
+                                                StatRow(stat: stat)
+                                            }
+                                        }
+                                    }
+                                }
 
-                            // Height & Weight
-                            HStack(spacing: 30) {
-                                StatPill(
-                                    label: "Height",
-                                    value: String(
-                                        format: "%.1f m",
-                                        viewModel.pokemonDetail.height
-                                    )
-                                )
-                                StatPill(
-                                    label: "Weight",
-                                    value: String(
-                                        format: "%.1f kg",
-                                        viewModel.pokemonDetail.weight
-                                    )
-                                )
+                                // Type Defenses Section
+                                if let defenses = viewModel.pokemonDetail
+                                    .typeDefenses
+                                {
+                                    SectionView(title: "Type Defenses") {
+                                        TypeDefensesView(defenses: defenses)
+                                    }
+                                } else if viewModel.isLoading {
+                                    Text("Loading defenses...").font(.caption)
+                                        .padding(.horizontal)
+                                }
+
                             }
-                            .padding(.top)
-                            .redacted(
-                                reason: viewModel.isLoading ? .placeholder : []
-                            )
-                            .shimmering(active: viewModel.isLoading)
-                            Spacer()
+                            .padding(.horizontal)
                         }
                     }
+                    .padding(.top)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity)
             }
+            .scrollIndicators(.hidden)
 
             Image(systemName: "xmark")
                 .font(.system(size: 16, weight: .bold))
@@ -169,7 +295,7 @@ struct PokemonDetailView: View {
         .navigationTitle("Pokemon #\(viewModel.pokemonDetail.id)")
         .toolbarVisibility(.hidden, for: .navigationBar)
         .task {
-            if viewModel.pokemonDetail.id == -1 {
+            if viewModel.pokemonDetail.id == -1 || viewModel.errorOccurred {
                 await viewModel.fetchPokemonDetails()
             }
         }
@@ -180,30 +306,24 @@ struct PokemonDetailView: View {
     @Previewable @Namespace var animation
     NavigationStack {
         PokemonDetailView(
-            pokemonID: 25,
-            pokemonName: "Pikachu",
-            animation: animation,
-            apiService: PokemonAPIService(apiClient: MockPokemonAPIClient())
+            pokemonID: 1,
+            pokemonName: "Bulbasaur",
+            animation: animation
         )
     }
 }
 
-struct StatPill: View {
-    let label: String
-    let value: String
+struct SectionView<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
 
     var body: some View {
-        VStack {
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
-            Text(value)
-                .font(.headline)
-                .fontWeight(.medium)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(.title2, design: .rounded, weight: .bold))
+            content
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(.quaternary.opacity(0.5))
-        .clipShape(Capsule())
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 10).fill(.ultraThinMaterial))
     }
 }

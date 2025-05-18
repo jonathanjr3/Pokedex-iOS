@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BA3316C72DDA480600C6509A /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = BA3316C62DDA480600C6509A /* Flow */; };
 		BA35B1A12DD8910600A230E7 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = BA35B1A02DD8910600A230E7 /* OpenAPIURLSession */; };
 		BA35B1A52DD8927F00A230E7 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = BA35B1A42DD8927F00A230E7 /* OpenAPIRuntime */; };
 		BA5EC7172DD9FD1600148BAE /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = BA5EC7162DD9FD1600148BAE /* Shimmer */; };
@@ -98,6 +99,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA5EC7172DD9FD1600148BAE /* Shimmer in Frameworks */,
+				BA3316C72DDA480600C6509A /* Flow in Frameworks */,
 				BA35B1A52DD8927F00A230E7 /* OpenAPIRuntime in Frameworks */,
 				BA35B1A12DD8910600A230E7 /* OpenAPIURLSession in Frameworks */,
 				BAC321C52DD8D73900F425E8 /* AsyncAlgorithms in Frameworks */,
@@ -167,6 +169,7 @@
 				BA35B1A42DD8927F00A230E7 /* OpenAPIRuntime */,
 				BAC321C42DD8D73900F425E8 /* AsyncAlgorithms */,
 				BA5EC7162DD9FD1600148BAE /* Shimmer */,
+				BA3316C62DDA480600C6509A /* Flow */,
 			);
 			productName = Pokedex;
 			productReference = BADA2A332DCF711200CD7C64 /* Pokedex.app */;
@@ -256,6 +259,7 @@
 				BA35B1A32DD8927F00A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
 				BAC321C32DD8D73900F425E8 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				BA5EC7152DD9FD1600148BAE /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
+				BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BADA2A342DCF711200CD7C64 /* Products */;
@@ -659,6 +663,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.2;
+			};
+		};
 		BA35B19F2DD8910600A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-openapi-urlsession";
@@ -702,6 +714,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		BA3316C62DDA480600C6509A /* Flow */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;
+			productName = Flow;
+		};
 		BA35B1A02DD8910600A230E7 /* OpenAPIURLSession */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BA35B19F2DD8910600A230E7 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
