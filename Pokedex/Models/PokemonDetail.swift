@@ -21,7 +21,6 @@ struct PokemonDetail: Identifiable {
     var abilities: [PokemonAbility] = []
     var stats: [PokemonStat] = []
     var typeDefenses: PokemonTypeDefenses?
-    var dominantColor: Color = .gray // For theming
 
     init(id: Int, name: String, spriteURL: URL? = nil, height: Int?, weight: Int?) {
         self.id = id

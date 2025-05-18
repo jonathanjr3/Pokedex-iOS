@@ -16,8 +16,17 @@ final class PokemonDetailViewModel {
     )
     private(set) var isLoading: Bool = false
     private(set) var errorMessage: String? = nil
-    private(set) var meshGradientColours: [Color] = []
-    private(set) var meshGradientPoints: [SIMD2<Float>] = []
+    private(set) var errorOccurred: Bool = false
+    private(set) var meshGradientColours: [Color] = [
+        .black, .black, .black,
+        .blue, .blue, .blue,
+        .green, .green, .green,
+    ]
+    private(set) var meshGradientPoints: [SIMD2<Float>] = [
+        .init(0, 0), .init(0.5, 0), .init(1, 0),
+        .init(0, 0.5), .init(0.9, 0.3), .init(1, 0.5),
+        .init(0, 1), .init(0.5, 1), .init(1, 1),
+    ]
     var meshGradientRows: Int {
         gradientColours.count
     }
@@ -60,11 +69,12 @@ final class PokemonDetailViewModel {
                     try await apiService.getSpeciesDetails(
                         id: String(pokemonId)
                     )
-                pokemonDetail.dominantColor =
+
+                gradientColours.append(
                     mapPokemonColorNameToSwiftUIColor(
                         pokemonSpeciesDetail.color.name
                     )
-                gradientColours.append(pokemonDetail.dominantColor)
+                )
             } catch {
                 print(
                     "Error occurred while retrieving pokemon species details in detail view model: \(error)"
@@ -86,16 +96,28 @@ final class PokemonDetailViewModel {
             pokemonDetail.types.forEach { typeInfo in
                 gradientColours.append(typeInfo.color)
             }
-            meshGradientPoints = Utilities.generateRandomCoordinates(rows: gradientColours.count, columns: 3)
-            meshGradientColours = generateColourArray(from: gradientColours)
+            await MainActor.run {
+                withAnimation(.smooth) {
+                    meshGradientPoints = Utilities.generateRandomCoordinates(
+                        rows: gradientColours.count,
+                        columns: 3
+                    )
+                    meshGradientColours = generateColourArray(
+                        from: gradientColours
+                    )
+                }
+            }
         } catch {
             errorMessage =
                 "Failed to load Pokémon details, try again later."
+            errorOccurred = true
             print(
                 "Error fetching Pokemon details for ID \(pokemonId): \(error)"
             )
         }
-        isLoading = false
+        await MainActor.run {
+            isLoading = false
+        }
     }
 
     // Helper to map color names from API to SwiftUI Color

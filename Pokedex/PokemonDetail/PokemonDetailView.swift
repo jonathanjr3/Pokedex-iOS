@@ -5,21 +5,25 @@
 //  Created by Jonathan Rajya on 11/05/2025.
 //
 
+import Shimmer
 import SwiftUI
 
 struct PokemonDetailView: View {
     let animation: Namespace.ID
     private let pokemonID: Int
+    private let pokemonName: String
 
     @State private var viewModel: PokemonDetailViewModel
     @Environment(\.dismiss) private var dismiss
 
     init(
         pokemonID: Int,
+        pokemonName: String,
         animation: Namespace.ID,
         apiService: PokemonAPIService = .shared
     ) {
         self.pokemonID = pokemonID
+        self.pokemonName = pokemonName
         viewModel = PokemonDetailViewModel(
             pokemonId: pokemonID,
             apiService: apiService
@@ -29,8 +33,8 @@ struct PokemonDetailView: View {
 
     var contentUnavailableView: some View {
         ContentUnavailableView(
-            "Failed to Load",
-            systemImage: "wifi.exclamationmark",
+            "Failed to Load Details",
+            systemImage: "exclamationmark.triangle",
             description: Text(
                 viewModel.errorMessage ?? "An unknown error occurred"
             )
@@ -40,7 +44,6 @@ struct PokemonDetailView: View {
             maxHeight: .infinity,
             alignment: .center
         )
-        .padding(.top, 200)
     }
 
     var body: some View {
@@ -52,7 +55,7 @@ struct PokemonDetailView: View {
                 colors: viewModel.meshGradientColours
             )
             .ignoresSafeArea()
-            
+
             ScrollView {
                 VStack(spacing: 0) {
                     AsyncImage(
@@ -82,31 +85,27 @@ struct PokemonDetailView: View {
                     .navigationTransition(
                         .zoom(sourceID: pokemonID, in: animation)
                     )
+                    VStack(spacing: 20) {
+                        Text(pokemonName)
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundColor(Color.primary)
 
-                    if viewModel.isLoading && viewModel.pokemonDetail.id == -1 {
-                        ProgressView("Loading details...")
-                            .frame(
-                                maxWidth: .infinity,
-                                maxHeight: .infinity,
-                                alignment: .center
+                        Text(
+                            String(
+                                format: "#%03d",
+                                pokemonID
                             )
-                            .padding(.top, 200)
-                    } else if viewModel.pokemonDetail.id != -1 {
-                        VStack(spacing: 20) {
-                            Text(viewModel.pokemonDetail.name)
-                                .font(.system(size: 34, weight: .bold))
-                                .foregroundColor(Color.primary)
+                        )
+                        .font(.title2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
 
-                            Text(
-                                String(
-                                    format: "#%03d",
-                                    viewModel.pokemonDetail.id
-                                )
-                            )
-                            .font(.title2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-
+                        if viewModel.errorOccurred {
+                            contentUnavailableView
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .padding(.horizontal)
+                        } else {
                             HStack {
                                 ForEach(viewModel.pokemonDetail.types) {
                                     typeInfo in
@@ -123,6 +122,10 @@ struct PokemonDetailView: View {
                                         .clipShape(Capsule())
                                 }
                             }
+                            .redacted(
+                                reason: viewModel.isLoading ? .placeholder : []
+                            )
+                            .shimmering(active: viewModel.isLoading)
 
                             // Height & Weight
                             HStack(spacing: 30) {
@@ -142,14 +145,16 @@ struct PokemonDetailView: View {
                                 )
                             }
                             .padding(.top)
+                            .redacted(
+                                reason: viewModel.isLoading ? .placeholder : []
+                            )
+                            .shimmering(active: viewModel.isLoading)
                             Spacer()
                         }
-                    } else {
-                        contentUnavailableView
                     }
                 }
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
 
             Image(systemName: "xmark")
                 .font(.system(size: 16, weight: .bold))
@@ -158,7 +163,7 @@ struct PokemonDetailView: View {
                 .onTapGesture {
                     dismiss()
                 }
-                .padding(.trailing)
+                .padding([.trailing, .top])
         }
         .navigationTitle("Pokemon #\(viewModel.pokemonDetail.id)")
         .toolbarVisibility(.hidden, for: .navigationBar)
@@ -175,6 +180,7 @@ struct PokemonDetailView: View {
     NavigationStack {
         PokemonDetailView(
             pokemonID: 25,
+            pokemonName: "Pikachu",
             animation: animation,
             apiService: PokemonAPIService(apiClient: MockPokemonAPIClient())
         )

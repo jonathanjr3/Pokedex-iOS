@@ -5,8 +5,8 @@
 //  Created by Jonathan Rajya on 15/05/2025.
 //
 
-import SwiftUI
 import Foundation
+import SwiftUI
 
 public struct PokemonListView: View {
     @State private var viewModel: PokemonListViewModel
@@ -24,13 +24,17 @@ public struct PokemonListView: View {
 
     public var body: some View {
         List {
-            let items: [PokemonListItem] = viewModel.isSearching
+            let items: [PokemonListItem] =
+                viewModel.isSearching
                 ? viewModel.searchResults
-                : viewModel.allPokemonSummaries.map { PokemonListItem(pokemonSummary: $0) }
+                : viewModel.allPokemonSummaries.map {
+                    PokemonListItem(pokemonSummary: $0)
+                }
             ForEach(items) { pokemonItem in
                 NavigationLink {
                     PokemonDetailView(
                         pokemonID: pokemonItem.id,
+                        pokemonName: pokemonItem.name,
                         animation: animation
                     )
                 } label: {
@@ -54,7 +58,10 @@ public struct PokemonListView: View {
                 items.isEmpty
             {
                 ContentUnavailableView {
-                    Label("Something went wrong", systemImage: "wifi.exclamationmark")
+                    Label(
+                        "Something went wrong",
+                        systemImage: "wifi.exclamationmark"
+                    )
                 } description: {
                     Text(errorMessage)
                 } actions: {
@@ -67,7 +74,10 @@ public struct PokemonListView: View {
                 }
             }
         }
-        .searchable(text: $viewModel.searchQuery, prompt: "Search Pokémon by name or id")
+        .searchable(
+            text: $viewModel.searchQuery,
+            prompt: "Search Pokémon by name or id"
+        )
         .onAppear {
             if viewModel.allPokemonSummaries.isEmpty {
                 Task {

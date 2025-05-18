@@ -32,24 +32,17 @@ final class PokemonListViewModel {
         isLoading = true
         errorMessage = nil
         var allResults: [Components.Schemas.PokemonSummary] = []
-        var offset = 0
+        let offset = 0
         let pageSize = 2000
-        var keepGoing = true
-        while keepGoing {
-            do {
-                let page = try await apiService.getPokemonList(limit: pageSize, offset: offset)
-                if let results = page.results {
-                    allResults.append(contentsOf: results)
-                    offset += results.count
-                    keepGoing = (page.next != nil && !results.isEmpty)
-                } else {
-                    keepGoing = false
-                }
-            } catch {
-                errorMessage = "Failed to load Pokémon: \(error.localizedDescription)"
-                print("Error fetching all summaries: \(error)")
-                break
+        do {
+            let page = try await apiService.getPokemonList(limit: pageSize, offset: offset)
+            if let results = page.results {
+                allResults.append(contentsOf: results)
             }
+        } catch {
+            errorMessage = "Failed to load Pokémon: \(error.localizedDescription)"
+            print("Error fetching all summaries: \(error)")
+            return
         }
         allPokemonSummaries = allResults
         allSummariesLoaded = true
