@@ -55,6 +55,7 @@ struct PokemonDetailView: View {
                 colors: viewModel.meshGradientColours
             )
             .ignoresSafeArea()
+            .animation(.smooth, value: viewModel.meshGradientPoints)
 
             ScrollView {
                 VStack(spacing: 0) {

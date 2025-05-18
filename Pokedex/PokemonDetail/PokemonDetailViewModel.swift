@@ -97,15 +97,13 @@ final class PokemonDetailViewModel {
                 gradientColours.append(typeInfo.color)
             }
             await MainActor.run {
-                withAnimation(.smooth) {
-                    meshGradientPoints = Utilities.generateRandomCoordinates(
-                        rows: gradientColours.count,
-                        columns: 3
-                    )
-                    meshGradientColours = generateColourArray(
-                        from: gradientColours
-                    )
-                }
+                meshGradientPoints = Utilities.generateRandomCoordinates(
+                    rows: gradientColours.count,
+                    columns: 3
+                )
+                meshGradientColours = generateColourArray(
+                    from: gradientColours
+                )
             }
         } catch {
             errorMessage =
