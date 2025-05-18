@@ -10,15 +10,22 @@ import OpenAPIURLSession
 
 final actor PokemonAPIService {
     private let client: APIProtocol
+    /// Shared service instance which uses real client object
+    static let shared: PokemonAPIService = PokemonAPIService()
 
     init(apiClient: APIProtocol) {
         client = apiClient
     }
 
-    init() {
+    private init() {
+        let config: URLSessionConfiguration = URLSessionConfiguration.default
+        config.waitsForConnectivity = true
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
+        let transport = URLSessionTransport(configuration: .init(session: .init(configuration: config)))
         self.client = Client(
             serverURL: try! Servers.Server1.url(),
-            transport: URLSessionTransport(),
+            transport: transport,
         )
     }
 

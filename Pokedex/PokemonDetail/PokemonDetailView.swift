@@ -17,7 +17,7 @@ struct PokemonDetailView: View {
     init(
         pokemonID: Int,
         animation: Namespace.ID,
-        apiService: PokemonAPIService = PokemonAPIService()
+        apiService: PokemonAPIService = .shared
     ) {
         self.pokemonID = pokemonID
         viewModel = PokemonDetailViewModel(
@@ -176,7 +176,7 @@ struct PokemonDetailView: View {
         PokemonDetailView(
             pokemonID: 25,
             animation: animation,
-            apiService: PokemonAPIService()
+            apiService: PokemonAPIService(apiClient: MockPokemonAPIClient())
         )
     }
 }

@@ -28,7 +28,7 @@ final class PokemonDetailViewModel {
 
     init(
         pokemonId: Int,
-        apiService: PokemonAPIService = PokemonAPIService()
+        apiService: PokemonAPIService = .shared
     ) {
         self.pokemonId = pokemonId
         self.apiService = apiService

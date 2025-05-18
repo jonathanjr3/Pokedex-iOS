@@ -18,7 +18,7 @@ public struct PokemonListView: View {
         count: 2
     )
 
-    init(apiService: PokemonAPIService = PokemonAPIService()) {
+    init(apiService: PokemonAPIService = .shared) {
         viewModel = PokemonListViewModel(apiService: apiService)
     }
 
@@ -53,11 +53,18 @@ public struct PokemonListView: View {
             if let errorMessage = viewModel.errorMessage,
                 items.isEmpty
             {
-                ContentUnavailableView(
-                    "Something went wrong.",
-                    systemImage: "wifi.exclamationmark",
-                    description: Text(errorMessage)
-                )
+                ContentUnavailableView {
+                    Label("Something went wrong", systemImage: "wifi.exclamationmark")
+                } description: {
+                    Text(errorMessage)
+                } actions: {
+                    Button("Retry", systemImage: "arrow.clockwise") {
+                        Task {
+                            await viewModel.fetchAllPokemonSummariesIfNeeded()
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
         }
         .searchable(text: $viewModel.searchQuery, prompt: "Search Pokémon by name or id")

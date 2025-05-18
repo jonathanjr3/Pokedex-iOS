@@ -22,7 +22,7 @@ final class PokemonListViewModel {
     private var allSummariesLoaded = false
     @ObservationIgnored let queryChannel = AsyncChannel<String>()
 
-    init(apiService: PokemonAPIService = PokemonAPIService()) {
+    init(apiService: PokemonAPIService = .shared) {
         self.apiService = apiService
     }
 
