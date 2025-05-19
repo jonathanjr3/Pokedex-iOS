@@ -15,6 +15,17 @@ struct PokemonDetailView: View {
     private let pokemonID: Int
     private let pokemonName: String
 
+    private let meshGradientColours: [Color] = [
+        .black, .black, .black,
+        .blue, .blue, .blue,
+        .green, .green, .green,
+    ]
+    private let meshGradientPoints: [SIMD2<Float>] = [
+        .init(0, 0), .init(0.5, 0), .init(1, 0),
+        .init(0, 0.5), .init(0.9, 0.3), .init(1, 0.5),
+        .init(0, 1), .init(0.5, 1), .init(1, 1),
+    ]
+
     @State private var viewModel: PokemonDetailViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -52,13 +63,12 @@ struct PokemonDetailView: View {
         ZStack(alignment: .topTrailing) {
             MeshGradient(
                 width: 3,
-                height: viewModel.meshGradientRows,
+                height: 3,
                 points: viewModel.meshGradientPoints,
                 colors: viewModel.meshGradientColours,
                 background: Color.accentColor
             )
             .ignoresSafeArea()
-            .animation(.smooth, value: viewModel.meshGradientPoints)
 
             FancyScrollView {
                 VStack(spacing: 0) {

@@ -27,9 +27,6 @@ final class PokemonDetailViewModel {
         .init(0, 0.5), .init(0.9, 0.3), .init(1, 0.5),
         .init(0, 1), .init(0.5, 1), .init(1, 1),
     ]
-    var meshGradientRows: Int {
-        gradientColours.count
-    }
 
     private let pokemonId: Int
     private let apiService: PokemonAPIService
@@ -173,15 +170,23 @@ final class PokemonDetailViewModel {
             tempPokemonDetail.types.forEach { typeInfo in
                 gradientColours.append(typeInfo.color)
             }
+            // Add app's accent color to gradient colours array to make it three rows
+            // Animation on MeshGradient is jarring when number of rows (or) columns changes
+            // This is done to make the animation on meshgradient less jarring
+            if gradientColours.count < 3 {
+                gradientColours.append(Color.accent)
+            }
             await MainActor.run { [tempPokemonDetail] in
-                meshGradientPoints = Utilities.generateRandomCoordinates(
-                    rows: gradientColours.count,
-                    columns: 3
-                )
-                meshGradientColours = generateColourArray(
-                    from: gradientColours
-                )
-                pokemonDetail = tempPokemonDetail
+                withAnimation(.smooth) {
+                    meshGradientPoints = Utilities.generateRandomCoordinates(
+                        rows: gradientColours.count,
+                        columns: 3
+                    )
+                    meshGradientColours = generateColourArray(
+                        from: gradientColours
+                    )
+                    pokemonDetail = tempPokemonDetail
+                }
             }
         } catch {
             errorMessage =
