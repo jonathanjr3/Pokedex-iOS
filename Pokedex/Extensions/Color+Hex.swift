@@ -2,7 +2,7 @@
 //  Color+Hex.swift
 //  Pokedex
 //
-//  Created by Deepika G on 19/05/2025.
+//  Created by Jonathan Rajya on 19/05/2025.
 //
 
 import SwiftData

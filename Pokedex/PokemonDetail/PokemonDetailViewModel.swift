@@ -1,4 +1,3 @@
-import SwiftData
 //
 //  PokemonDetailViewModel.swift
 //  Pokedex
@@ -6,6 +5,7 @@ import SwiftData
 //  Created by Jonathan Rajya on 16/05/2025.
 //
 import SwiftUI
+import SwiftData
 
 @Observable
 final class PokemonDetailViewModel {
