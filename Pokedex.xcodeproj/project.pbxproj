@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		80BE49652DDB2FE40003F401 /* FancyScrollView in Frameworks */ = {isa = PBXBuildFile; productRef = 80BE49642DDB2FE40003F401 /* FancyScrollView */; };
 		BA3316C72DDA480600C6509A /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = BA3316C62DDA480600C6509A /* Flow */; };
 		BA35B1A12DD8910600A230E7 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = BA35B1A02DD8910600A230E7 /* OpenAPIURLSession */; };
 		BA35B1A52DD8927F00A230E7 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = BA35B1A42DD8927F00A230E7 /* OpenAPIRuntime */; };
@@ -42,8 +43,6 @@
 		BA2B47352DCF9D90005B198E /* Exceptions for "Pokedex" folder in "Pokedex" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"Extensions/View+Debounce.swift",
-				"Extensions/View+Utilities.swift",
 				"openapi-generator-config.yaml",
 				openapi.yaml,
 			);
@@ -60,14 +59,6 @@
 				openapi.yaml,
 			);
 		};
-		BAC321C02DD8D66F00F425E8 /* Exceptions for "Pokedex" folder in "Copy Bundle Resources" phase from "Pokedex" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = BADA2A312DCF711200CD7C64 /* Resources */;
-			membershipExceptions = (
-				"Extensions/View+Debounce.swift",
-				"Extensions/View+Utilities.swift",
-			);
-		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -76,7 +67,6 @@
 			exceptions = (
 				BA2B47352DCF9D90005B198E /* Exceptions for "Pokedex" folder in "Pokedex" target */,
 				BA35B1A92DD8929900A230E7 /* Exceptions for "Pokedex" folder in "Compile Sources" phase from "Pokedex" target */,
-				BAC321C02DD8D66F00F425E8 /* Exceptions for "Pokedex" folder in "Copy Bundle Resources" phase from "Pokedex" target */,
 			);
 			path = Pokedex;
 			sourceTree = "<group>";
@@ -98,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80BE49652DDB2FE40003F401 /* FancyScrollView in Frameworks */,
 				BA5EC7172DD9FD1600148BAE /* Shimmer in Frameworks */,
 				BA3316C72DDA480600C6509A /* Flow in Frameworks */,
 				BA35B1A52DD8927F00A230E7 /* OpenAPIRuntime in Frameworks */,
@@ -170,6 +161,7 @@
 				BAC321C42DD8D73900F425E8 /* AsyncAlgorithms */,
 				BA5EC7162DD9FD1600148BAE /* Shimmer */,
 				BA3316C62DDA480600C6509A /* Flow */,
+				80BE49642DDB2FE40003F401 /* FancyScrollView */,
 			);
 			productName = Pokedex;
 			productReference = BADA2A332DCF711200CD7C64 /* Pokedex.app */;
@@ -229,7 +221,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1630;
-				LastUpgradeCheck = 1630;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					BADA2A322DCF711200CD7C64 = {
 						CreatedOnToolsVersion = 16.3;
@@ -260,6 +252,7 @@
 				BAC321C32DD8D73900F425E8 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				BA5EC7152DD9FD1600148BAE /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
 				BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
+				80BE49632DDB2FE40003F401 /* XCRemoteSwiftPackageReference "FancyScrollView" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BADA2A342DCF711200CD7C64 /* Products */;
@@ -373,6 +366,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -435,6 +429,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -464,6 +459,8 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = Z5GPX9NT7Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -485,7 +482,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -504,6 +501,8 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = Z5GPX9NT7Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -525,7 +524,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -541,6 +540,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
@@ -563,6 +563,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
@@ -584,6 +585,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
@@ -605,6 +607,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
@@ -663,6 +666,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		80BE49632DDB2FE40003F401 /* XCRemoteSwiftPackageReference "FancyScrollView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nerdsupremacist/FancyScrollView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.4;
+			};
+		};
 		BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow.git";
@@ -714,6 +725,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		80BE49642DDB2FE40003F401 /* FancyScrollView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80BE49632DDB2FE40003F401 /* XCRemoteSwiftPackageReference "FancyScrollView" */;
+			productName = FancyScrollView;
+		};
 		BA3316C62DDA480600C6509A /* Flow */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;

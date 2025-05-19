@@ -20,12 +20,12 @@ struct AbilityRow: View {
                         .foregroundColor(.secondary)
                 }
             }
-            if let description = ability.effectDescription {
+            /*if let description = ability.effectDescription {
                 Text(description)
                     .font(.caption)
                     .foregroundColor(.gray)
                     .lineLimit(2)
-            }
+            }*/
         }
     }
 }

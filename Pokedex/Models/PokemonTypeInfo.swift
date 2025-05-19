@@ -37,6 +37,8 @@ struct PokemonTypeInfo: Identifiable, Hashable {
         case "dark": return "moon.fill"
         case "steel": return "shield.pattern.checkered"
         case "fairy": return "wand.and.sparkles"
+        case "shadow": return "eye.slash.fill"
+        case "stellar": return "fireworks"
         default: return "questionmark.app"
         }
     }
@@ -67,6 +69,8 @@ struct PokemonTypeInfo: Identifiable, Hashable {
         case "dark": return Color(red: 0.3, green: 0.3, blue: 0.3)
         case "steel": return Color(red: 0.7, green: 0.7, blue: 0.8)
         case "fairy": return Color(red: 0.9, green: 0.6, blue: 0.9)
+        case "shadow": return Color.black.opacity(0.6)
+        case "stellar": return Color.red.mix(with: Color.blue, by: 0.5).mix(with: .green, by: 0.5)
         default: return Color.gray
         }
     }

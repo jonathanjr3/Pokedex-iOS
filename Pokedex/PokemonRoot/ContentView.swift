@@ -9,17 +9,21 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @State private var selectedTab: Int = 0
+    
     var body: some View {
         NavigationStack {
-            TabView {
-                Tab("Browse", systemImage: "list.bullet") {
+            TabView(selection: $selectedTab) {
+                Tab("Browse", systemImage: "list.bullet", value: 0, role: .search) {
                     PokemonListView()
                 }
-                Tab("Favourites", systemImage: "heart.fill") {
+                Tab("Favourites", systemImage: "heart.fill", value: 1) {
                     Text("🚧 Favourites coming soon 🚧")
                 }
             }
+            .tabViewStyle(.sidebarAdaptable)
             .navigationTitle("Pokedex")
+            .sensoryFeedback(.selection, trigger: selectedTab)
         }
     }
 }

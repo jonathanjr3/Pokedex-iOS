@@ -7860,7 +7860,6 @@ components:
           type: object
           required:
             - latest
-            - legacy
           properties:
             latest:
               type: string
@@ -7869,6 +7868,7 @@ components:
                 - https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/50.ogg
             legacy:
               type: string
+              nullable: true
               format: uri
               examples:
                 - https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/50.ogg

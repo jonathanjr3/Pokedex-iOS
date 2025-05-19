@@ -5,11 +5,13 @@
 //  Created by Jonathan Rajya on 15/05/2025.
 //
 
+import Flow
 import Foundation
 import SwiftUI
 
-public struct PokemonListView: View {
+struct PokemonListView: View {
     @State private var viewModel: PokemonListViewModel
+    @State private var showFilterSheet: Bool = false
     @Namespace var animation
 
     // For grid layout
@@ -22,21 +24,16 @@ public struct PokemonListView: View {
         viewModel = PokemonListViewModel(apiService: apiService)
     }
 
-    public var body: some View {
+    var body: some View {
         List {
-            let items: [PokemonListItem] =
-                viewModel.isSearching
-                ? viewModel.searchResults
-                : viewModel.allPokemonSummaries.map {
-                    PokemonListItem(pokemonSummary: $0)
-                }
-            ForEach(items) { pokemonItem in
+            ForEach(viewModel.displayedPokemonItems) { pokemonItem in
                 NavigationLink {
                     PokemonDetailView(
                         pokemonID: pokemonItem.id,
                         pokemonName: pokemonItem.name,
                         animation: animation
                     )
+                    .toolbarVisibility(.hidden, for: .navigationBar)
                 } label: {
                     PokemonListRow(
                         pokemonItem: pokemonItem,
@@ -45,7 +42,7 @@ public struct PokemonListView: View {
                 }
             }
 
-            if viewModel.isLoading {
+            if viewModel.isLoading || viewModel.isLoadingFilteredPokemon {
                 HStack {
                     Spacer()
                     ProgressView()
@@ -55,7 +52,7 @@ public struct PokemonListView: View {
             }
 
             if let errorMessage = viewModel.errorMessage,
-                items.isEmpty
+                viewModel.displayedPokemonItems.isEmpty
             {
                 ContentUnavailableView {
                     Label(
@@ -67,10 +64,31 @@ public struct PokemonListView: View {
                 } actions: {
                     Button("Retry", systemImage: "arrow.clockwise") {
                         Task {
-                            await viewModel.fetchAllPokemonSummariesIfNeeded()
+                            if let filterType = viewModel.selectedFilterType {
+                                await viewModel.fetchPokemon(
+                                    for: filterType
+                                )
+                            } else {
+                                await viewModel.fetchAllPokemonSummaries()
+                                await viewModel.fetchAllTypes()
+                            }
                         }
                     }
                     .buttonStyle(.bordered)
+                }
+            } else if !viewModel.isLoading
+                && !viewModel.isLoadingFilteredPokemon
+                && viewModel.displayedPokemonItems.isEmpty
+                && (viewModel.isSearching
+                    || viewModel.selectedFilterType != nil)
+            {
+                ContentUnavailableView.search(text: viewModel.searchQuery)
+                Button(
+                    "Clear search term and filters",
+                    systemImage: "xmark.circle.fill"
+                ) {
+                    viewModel.clearTypeFilter()
+                    viewModel.cancelSearch()
                 }
             }
         }
@@ -78,54 +96,84 @@ public struct PokemonListView: View {
             text: $viewModel.searchQuery,
             prompt: "Search Pokémon by name or id"
         )
+        .debounce(
+            $viewModel.searchQuery,
+            using: viewModel.queryChannel,
+            for: .seconds(0.3),
+            action: viewModel.performSearch
+        )
         .onAppear {
             if viewModel.allPokemonSummaries.isEmpty {
                 Task {
-                    await viewModel.fetchAllPokemonSummariesIfNeeded()
+                    await viewModel.fetchAllPokemonSummaries()
+                }
+            }
+            if viewModel.allTypes.isEmpty {
+                Task {
+                    await viewModel.fetchAllTypes()
                 }
             }
         }
-    }
-}
-
-struct PokemonListRow: View {
-    let pokemonItem: PokemonListItem
-    let animation: Namespace.ID
-
-    var body: some View {
-        HStack {
-            AsyncImage(url: pokemonItem.spriteURL) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                        .frame(width: 70, height: 70)
-                case .success(let image):
-                    image.resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 70, height: 70)
-                case .failure:
-                    Image(systemName: "questionmark.diamond")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 50)
-                        .padding(10)
-                        .foregroundColor(.gray)
-                @unknown default:
-                    EmptyView()
+        .toolbar(content: {
+            ToolbarItem(placement: .automatic) {
+                Label(
+                    "Filter",
+                    systemImage: "line.3.horizontal.decrease.circle"
+                )
+                .onTapGesture {
+                    showFilterSheet.toggle()
                 }
             }
-            .matchedTransitionSource(id: pokemonItem.id, in: animation)
-
+        })
+        .sheet(isPresented: $showFilterSheet) {
+            // Filter view
             VStack(alignment: .leading) {
-                Text(pokemonItem.name)
-                    .font(.headline)
-                Text(String(format: "#%03d", pokemonItem.id))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                HStack {
+                    Text("Filters")
+                        .font(.system(.largeTitle, weight: .bold))
+                        .padding(.bottom, 10)
+                    Spacer()
+                    Button("Clear All", systemImage: "xmark.circle.fill") {
+                        viewModel.clearTypeFilter()
+                        showFilterSheet.toggle()
+                    }
+                    .sensoryFeedback(.selection, trigger: viewModel.selectedFilterType)
+                }
+                Section {
+                    HFlow {
+                        ForEach(viewModel.allTypes) { typeInfo in
+                            TypePill(
+                                typeInfo: typeInfo,
+                                shouldShowBackgroundColour: viewModel
+                                    .selectedFilterType?.name == typeInfo.name
+                            )
+                            .onTapGesture {
+                                showFilterSheet.toggle()
+                                Task {
+                                    await viewModel.fetchPokemon(for: typeInfo)
+                                }
+                            }
+                            .sensoryFeedback(.selection, trigger: viewModel.selectedFilterType)
+                        }
+                    }
+                } header: {
+                    Text("Pokemon Types")
+                        .font(
+                            .system(
+                                .headline,
+                                weight: .semibold
+                            )
+                        )
+                } footer: {
+                    Text("Tap on a type to filter the list")
+                        .font(.footnote)
+                        .padding(.top, 4)
+                }
             }
-            Spacer()
+            .padding(.horizontal)
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
         }
-        .padding(.vertical, 4)
     }
 }
 

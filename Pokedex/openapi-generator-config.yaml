@@ -8,4 +8,5 @@ filter:
         - type_retrieve
         - pokemon_species_retrieve
         - ability_retrieve
+        - type_list
 namingStrategy: idiomatic
