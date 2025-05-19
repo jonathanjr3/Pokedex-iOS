@@ -28,6 +28,7 @@ struct PokemonDetailView: View {
 
     @State private var viewModel: PokemonDetailViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
     init(
         pokemonID: Int,
@@ -289,19 +290,37 @@ struct PokemonDetailView: View {
             }
             .scrollIndicators(.hidden)
 
-            Image(systemName: "xmark")
+            HStack {
+                Image(
+                    systemName: viewModel.isFavorite
+                        ? "heart.fill" : "heart"
+                )
                 .font(.system(size: 16, weight: .bold))
+                .foregroundColor(viewModel.isFavorite ? .red : .gray)
                 .padding(10)
                 .background(.ultraThinMaterial, in: Circle())
                 .onTapGesture {
-                    dismiss()
+                    viewModel.toggleFavorite()
                 }
-                .padding([.trailing, .top])
+                .padding(.trailing)
+                .sensoryFeedback(.success, trigger: viewModel.isFavorite)
+
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .bold))
+                    .padding(10)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .onTapGesture {
+                        dismiss()
+                    }
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding([.trailing, .top])
         }
         .navigationTitle("")
         .toolbar(removing: .title)
         .toolbarVisibility(.hidden, for: .navigationBar)
         .task {
+            viewModel.setModelContext(modelContext)
             if viewModel.pokemonDetail.id == -1 || viewModel.errorOccurred {
                 await viewModel.fetchPokemonDetails()
             }

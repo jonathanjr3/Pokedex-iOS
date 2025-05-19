@@ -16,5 +16,6 @@ struct PokedexApp: App {
             ContentView()
                 .fontDesign(.rounded)
         }
+        .modelContainer(for: FavouritePokemon.self)
     }
 }

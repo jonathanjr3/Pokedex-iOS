@@ -1,3 +1,4 @@
+import SwiftData
 //
 //  PokemonDetailViewModel.swift
 //  Pokedex
@@ -27,17 +28,144 @@ final class PokemonDetailViewModel {
         .init(0, 0.5), .init(0.9, 0.3), .init(1, 0.5),
         .init(0, 1), .init(0.5, 1), .init(1, 1),
     ]
+    private(set) var isFavorite: Bool = false
+    @ObservationIgnored private var modelContext: ModelContext?
 
-    private let pokemonId: Int
-    private let apiService: PokemonAPIService
-    private var gradientColours: [Color] = []
+    @ObservationIgnored private let pokemonId: Int
+    @ObservationIgnored private let apiService: PokemonAPIService
+    @ObservationIgnored private var gradientColours: [Color] = []
 
     init(
         pokemonId: Int,
+        modelContext: ModelContext? = nil,
         apiService: PokemonAPIService = .shared
     ) {
         self.pokemonId = pokemonId
         self.apiService = apiService
+
+        if modelContext != nil {
+            checkIfFavorite()
+        }
+    }
+    
+    init(
+        favoritePokemon: FavouritePokemon,
+        modelContext: ModelContext? = nil
+    ) {
+        self.pokemonId = favoritePokemon.id
+        self.apiService = PokemonAPIService.shared
+        self.modelContext = modelContext
+        var detail = PokemonDetail(
+            id: favoritePokemon.id,
+            name: favoritePokemon.name,
+            height: favoritePokemon.height,
+            weight: favoritePokemon.weight * 10
+        )
+        detail.description = favoritePokemon.flavorText ?? "No description available."
+        detail.types = favoritePokemon.types.map { typeName in
+            let typeId = Utilities.extractID(from: typeName) // This won't work well for name like "grass"
+                                                            // You'd need a name-to-ID map or store ID too
+            return PokemonTypeInfo(name: typeName, iconURL: nil /* Or try to get from Utilities */)
+        }
+        // dominantColor for mesh gradient from hex
+        if let hex = favoritePokemon.dominantColorHex, let color = Color(hex: hex) {
+            self.gradientColours = [color] // Or combine with type colors
+            // Initialize mesh gradient properties here based on this color
+        } else {
+            self.gradientColours = [.gray]
+        }
+        self.meshGradientPoints = Utilities.generateRandomCoordinates(rows: self.gradientColours.count, columns: 3)
+        self.meshGradientColours = generateColourArray(from: self.gradientColours)
+
+
+        detail.abilities = favoritePokemon.abilities?.map { PokemonAbility(name: $0, isHidden: false, effectDescription: "N/A (Offline)") } ?? []
+        detail.stats = favoritePokemon.stats?.map { PokemonStat(name: $0.name, baseStat: $0.baseStat) } ?? []
+
+        self.pokemonDetail = detail
+        self.isLoading = false // Not loading from network
+        self.isFavorite = true // It's a favorite, so this is true
+        
+        if modelContext != nil {
+            checkIfFavorite() // Still useful to ensure UI consistency if toggled
+        }
+    }
+
+    func setModelContext(_ context: ModelContext) {
+        if self.modelContext == nil {
+            self.modelContext = context
+            checkIfFavorite()
+        }
+    }
+
+    private func checkIfFavorite() {
+        guard let context = modelContext else { return }
+        let fetchDescriptor = FetchDescriptor<FavouritePokemon>(
+            predicate: #Predicate { $0.id == pokemonId }
+        )
+        do {
+            let favorites = try context.fetch(fetchDescriptor)
+            isFavorite = !favorites.isEmpty
+        } catch {
+            print("Failed to fetch favorite status: \(error)")
+            isFavorite = false
+        }
+    }
+
+    func toggleFavorite() {
+        guard let context = modelContext else {
+            print("Model context not available to toggle favorite.")
+            return
+        }
+
+        if isFavorite {
+            // Remove from favorites
+            let fetchDescriptor = FetchDescriptor<FavouritePokemon>(
+                predicate: #Predicate { $0.id == pokemonId }
+            )
+            do {
+                if let favoriteToRemove = try context.fetch(fetchDescriptor)
+                    .first
+                {
+                    context.delete(favoriteToRemove)
+                    try context.save()
+                    isFavorite = false
+                    print("Removed \(pokemonDetail.name) from favorites.")
+                }
+            } catch {
+                print("Failed to remove favorite: \(error)")
+            }
+        } else {
+            // Add to favorites - ensure all necessary data is in `self.pokemonDetail`
+            guard pokemonDetail.id != -1 else {  // Ensure details are loaded
+                print("Cannot favorite: Pokémon details not fully loaded.")
+                // Optionally, trigger a fetch if details are missing, then favorite
+                return
+            }
+
+            let newFavorite = FavouritePokemon(
+                id: pokemonDetail.id,
+                name: pokemonDetail.name,
+                spriteURLString: pokemonDetail.spriteURL?.absoluteString,
+                types: pokemonDetail.types.map { $0.name.lowercased() },
+                dominantColorHex: gradientColours.first?.toHex(),
+                height: pokemonDetail.height,
+                weight: pokemonDetail.weight,
+                abilities: pokemonDetail.abilities.map { $0.name },
+                stats: pokemonDetail.stats.map {
+                    FavoriteStat(name: $0.name, baseStat: $0.baseStat)
+                },
+                flavorText: pokemonDetail.description,
+                dateAdded: Date()
+            )
+            context.insert(newFavorite)
+            do {
+                try context.save()
+                isFavorite = true
+                print("Added \(pokemonDetail.name) to favorites.")
+            } catch {
+                print("Failed to save favorite: \(error)")
+            }
+        }
     }
 
     func fetchPokemonDetails() async {
@@ -58,14 +186,16 @@ final class PokemonDetailViewModel {
             var tempPokemonDetail = PokemonDetail(
                 id: apiPokemonDetail.id,
                 name: apiPokemonDetail.name.capitalized,
-                height: apiPokemonDetail.height,
-                weight: apiPokemonDetail.weight
+                height: Double(apiPokemonDetail.height ?? 0),
+                weight: Double(apiPokemonDetail.weight ?? 0)
             )
 
             // Fetch Pokemon Species Data (for description, gender, base color)
             let pokemonSpeciesDetail =
                 try await apiService.getSpeciesDetails(
-                    id: String(Utilities.extractID(from: apiPokemonDetail.species.url) ?? pokemonId)
+                    id: String(
+                        Utilities.extractID(from: apiPokemonDetail.species.url)
+                            ?? pokemonId)
                 )
 
             // Dominant colour from species for gradient
@@ -177,6 +307,7 @@ final class PokemonDetailViewModel {
                 gradientColours.append(Color.accent)
             }
             await MainActor.run { [tempPokemonDetail] in
+                checkIfFavorite()
                 withAnimation(.smooth) {
                     meshGradientPoints = Utilities.generateRandomCoordinates(
                         rows: gradientColours.count,
