@@ -22,7 +22,9 @@ final actor PokemonAPIService {
         config.waitsForConnectivity = true
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 60
-        let transport = URLSessionTransport(configuration: .init(session: .init(configuration: config)))
+        let transport = URLSessionTransport(
+            configuration: .init(session: .init(configuration: config))
+        )
         self.client = Client(
             serverURL: try! Servers.Server1.url(),
             transport: transport,
@@ -139,6 +141,34 @@ final actor PokemonAPIService {
                 statusCode: statusCode,
                 message:
                     "Undocumented response: \(statusCode) pokemonSpeciesRetrieve"
+            )
+        }
+    }
+
+    func getAllTypes(limit: Int? = nil, offset: Int? = nil)
+        async throws(NetworkError)
+        -> Components.Schemas.PaginatedTypeSummaryList
+    {
+        let response: Operations.TypeList.Output
+        do {
+            response = try await client.typeList(
+                query: .init(limit: limit, offset: offset)
+            )
+        } catch {
+            print("Error in getAllTypes: \(error)")
+            throw NetworkError.unknownError(message: error.localizedDescription)
+        }
+
+        switch response {
+        case .ok(let okResponse):
+            switch okResponse.body {
+            case .json(let typeList):
+                return typeList
+            }
+        case .undocumented(let statusCode, _):
+            throw NetworkError.undocumentedResponse(
+                statusCode: statusCode,
+                message: "Undocumented response: \(statusCode) for typeList"
             )
         }
     }

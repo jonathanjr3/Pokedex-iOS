@@ -7,10 +7,27 @@
 import OpenAPIRuntime
 
 struct MockPokemonAPIClient: APIProtocol {
-    func abilityRetrieve(_ input: Operations.AbilityRetrieve.Input) async throws -> Operations.AbilityRetrieve.Output {
-        throw NetworkError.unknownError(message: "Mock not implemented for ability retrieve")
+    func typeList(_ input: Operations.TypeList.Input) async throws
+        -> Operations.TypeList.Output
+    {
+        let mockTypes: [Components.Schemas.TypeSummary] = [
+            .init(name: "normal", url: "/api/v2/type/1/"),
+            .init(name: "fire", url: "/api/v2/type/10/"),
+            .init(name: "water", url: "/api/v2/type/11/"),
+            .init(name: "grass", url: "/api/v2/type/12/"),
+            .init(name: "electric", url: "/api/v2/type/13/"),
+        ]
+        return .ok(.init(body: .json(.init(count: mockTypes.count, results: mockTypes))))
     }
-    
+
+    func abilityRetrieve(_ input: Operations.AbilityRetrieve.Input) async throws
+        -> Operations.AbilityRetrieve.Output
+    {
+        throw NetworkError.unknownError(
+            message: "Mock not implemented for ability retrieve"
+        )
+    }
+
     func typeRetrieve(_ input: Operations.TypeRetrieve.Input) async throws
         -> Operations.TypeRetrieve.Output
     {

@@ -12,13 +12,14 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             TabView {
-                Tab("Browse", systemImage: "list.bullet") {
+                Tab("Browse", systemImage: "list.bullet", role: .search) {
                     PokemonListView()
                 }
                 Tab("Favourites", systemImage: "heart.fill") {
                     Text("🚧 Favourites coming soon 🚧")
                 }
             }
+            .tabViewStyle(.sidebarAdaptable)
             .navigationTitle("Pokedex")
         }
     }

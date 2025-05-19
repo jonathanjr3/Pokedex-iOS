@@ -1,3 +1,6 @@
+import SwiftUI
+import AsyncAlgorithms
+
 extension View {
     // MARK: - Debounce with Binding
     func debounce<T: Sendable & Equatable>(
