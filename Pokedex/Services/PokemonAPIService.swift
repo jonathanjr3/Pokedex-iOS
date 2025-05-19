@@ -27,7 +27,7 @@ final actor PokemonAPIService {
         )
         self.client = Client(
             serverURL: try! Servers.Server1.url(),
-            transport: transport,
+            transport: transport
         )
     }
 

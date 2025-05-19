@@ -68,7 +68,7 @@ final class PokemonDetailViewModel {
             // Fetch Pokemon Species Data (for description, gender, base color)
             let pokemonSpeciesDetail =
                 try await apiService.getSpeciesDetails(
-                    id: String(pokemonId)
+                    id: String(Utilities.extractID(from: apiPokemonDetail.species.url) ?? pokemonId)
                 )
 
             // Dominant colour from species for gradient

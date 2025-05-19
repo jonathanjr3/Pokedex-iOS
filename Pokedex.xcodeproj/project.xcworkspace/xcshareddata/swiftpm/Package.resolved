@@ -1,6 +1,15 @@
 {
-  "originHash" : "ec9c52cb0bbccc01bd1a87b440808aab1714db41bf7bcfda75f3be93e70dc9c5",
+  "originHash" : "6f0a3f89b7af5492656eabb91339cd5a59465c2181ad861113404412787e8ff3",
   "pins" : [
+    {
+      "identity" : "fancyscrollview",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nerdsupremacist/FancyScrollView.git",
+      "state" : {
+        "revision" : "7f8194b23dc209cdb5b0ebc9799a8de487166fdf",
+        "version" : "0.1.4"
+      }
+    },
     {
       "identity" : "openapikit",
       "kind" : "remoteSourceControl",

@@ -5,6 +5,7 @@
 //  Created by Jonathan Rajya on 11/05/2025.
 //
 
+import FancyScrollView
 import Flow
 import Shimmer
 import SwiftUI
@@ -59,7 +60,7 @@ struct PokemonDetailView: View {
             .ignoresSafeArea()
             .animation(.smooth, value: viewModel.meshGradientPoints)
 
-            ScrollView {
+            FancyScrollView {
                 VStack(spacing: 0) {
                     AsyncImage(
                         url: Utilities.getPokemonSpriteURL(
@@ -89,17 +90,15 @@ struct PokemonDetailView: View {
                         .zoom(sourceID: pokemonID, in: animation)
                     )
                     VStack(alignment: .leading, spacing: 24) {
-                        HStack {
+                        VStack(alignment: .center) {
                             Text(pokemonName)
                                 .font(
                                     .system(
                                         size: 34,
-                                        weight: .bold,
-                                        design: .rounded
+                                        weight: .bold
                                     )
                                 )
                                 .foregroundStyle(.primary)
-                            Spacer()
                             Text(
                                 String(
                                     format: "#%03d",
@@ -109,12 +108,35 @@ struct PokemonDetailView: View {
                             .font(.title2)
                             .fontWeight(.medium)
                             .foregroundStyle(.secondary)
+
+                            HFlow {
+                                if viewModel.isLoading
+                                    && viewModel.pokemonDetail.types
+                                        .isEmpty
+                                {
+                                    ForEach(0..<2) { _ in
+                                        TypePillPlaceholder()
+                                    }
+                                } else if viewModel.pokemonDetail.types
+                                    .isEmpty
+                                {
+                                    Text("No types found.")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    ForEach(
+                                        viewModel.pokemonDetail.types
+                                    ) { typeInfo in
+                                        TypePill(typeInfo: typeInfo)
+                                    }
+                                }
+                            }
                         }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
+                        .padding()
+                        .frame(maxWidth: .infinity)
                         .background(
-                            Capsule()
-                                .fill(.ultraThinMaterial)
+                            RoundedRectangle(cornerRadius: 10).fill(
+                                .ultraThinMaterial)
                         )
                         .padding(.horizontal)
 
@@ -125,36 +147,10 @@ struct PokemonDetailView: View {
                                 .padding(.horizontal)
                         } else {
                             Group {
-                                // Types section
-                                SectionView(title: "Types") {
-                                    HStack {
-                                        if viewModel.isLoading
-                                            && viewModel.pokemonDetail.types
-                                                .isEmpty
-                                        {
-                                            ForEach(0..<2) { _ in
-                                                TypePillPlaceholder()
-                                            }
-                                        } else if viewModel.pokemonDetail.types
-                                            .isEmpty
-                                        {
-                                            Text("No types found.")
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
-                                        } else {
-                                            ForEach(
-                                                viewModel.pokemonDetail.types
-                                            ) { typeInfo in
-                                                TypePill(typeInfo: typeInfo)
-                                            }
-                                        }
-                                    }
-                                }
                                 // Description Section
                                 SectionView(title: "Description") {
                                     Text(viewModel.pokemonDetail.description)
                                         .font(.body)
-                                        .fontDesign(.rounded)
                                         .lineLimit(nil)
                                         .fixedSize(
                                             horizontal: false,
@@ -292,7 +288,8 @@ struct PokemonDetailView: View {
                 }
                 .padding([.trailing, .top])
         }
-        .navigationTitle("Pokemon #\(viewModel.pokemonDetail.id)")
+        .navigationTitle("")
+        .toolbar(removing: .title)
         .toolbarVisibility(.hidden, for: .navigationBar)
         .task {
             if viewModel.pokemonDetail.id == -1 || viewModel.errorOccurred {
@@ -306,8 +303,8 @@ struct PokemonDetailView: View {
     @Previewable @Namespace var animation
     NavigationStack {
         PokemonDetailView(
-            pokemonID: 1,
-            pokemonName: "Bulbasaur",
+            pokemonID: 10275,
+            pokemonName: "Ogerpon-Corenerstone-Mask",
             animation: animation
         )
     }
@@ -320,7 +317,7 @@ struct SectionView<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.system(.title2, design: .rounded, weight: .bold))
+                .font(.system(.title2, weight: .bold))
             content
         }
         .padding()

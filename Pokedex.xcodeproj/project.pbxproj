@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		80BE49652DDB2FE40003F401 /* FancyScrollView in Frameworks */ = {isa = PBXBuildFile; productRef = 80BE49642DDB2FE40003F401 /* FancyScrollView */; };
 		BA3316C72DDA480600C6509A /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = BA3316C62DDA480600C6509A /* Flow */; };
 		BA35B1A12DD8910600A230E7 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = BA35B1A02DD8910600A230E7 /* OpenAPIURLSession */; };
 		BA35B1A52DD8927F00A230E7 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = BA35B1A42DD8927F00A230E7 /* OpenAPIRuntime */; };
@@ -87,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80BE49652DDB2FE40003F401 /* FancyScrollView in Frameworks */,
 				BA5EC7172DD9FD1600148BAE /* Shimmer in Frameworks */,
 				BA3316C72DDA480600C6509A /* Flow in Frameworks */,
 				BA35B1A52DD8927F00A230E7 /* OpenAPIRuntime in Frameworks */,
@@ -159,6 +161,7 @@
 				BAC321C42DD8D73900F425E8 /* AsyncAlgorithms */,
 				BA5EC7162DD9FD1600148BAE /* Shimmer */,
 				BA3316C62DDA480600C6509A /* Flow */,
+				80BE49642DDB2FE40003F401 /* FancyScrollView */,
 			);
 			productName = Pokedex;
 			productReference = BADA2A332DCF711200CD7C64 /* Pokedex.app */;
@@ -249,6 +252,7 @@
 				BAC321C32DD8D73900F425E8 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				BA5EC7152DD9FD1600148BAE /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
 				BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
+				80BE49632DDB2FE40003F401 /* XCRemoteSwiftPackageReference "FancyScrollView" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BADA2A342DCF711200CD7C64 /* Products */;
@@ -456,6 +460,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = Z5GPX9NT7Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -477,7 +482,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -497,6 +502,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = Z5GPX9NT7Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -518,7 +524,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -660,6 +666,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		80BE49632DDB2FE40003F401 /* XCRemoteSwiftPackageReference "FancyScrollView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nerdsupremacist/FancyScrollView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.4;
+			};
+		};
 		BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow.git";
@@ -711,6 +725,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		80BE49642DDB2FE40003F401 /* FancyScrollView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80BE49632DDB2FE40003F401 /* XCRemoteSwiftPackageReference "FancyScrollView" */;
+			productName = FancyScrollView;
+		};
 		BA3316C62DDA480600C6509A /* Flow */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BA3316C52DDA480600C6509A /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;

@@ -83,7 +83,10 @@ struct PokemonListView: View {
                     || viewModel.selectedFilterType != nil)
             {
                 ContentUnavailableView.search(text: viewModel.searchQuery)
-                Button("Clear search term and filters", systemImage: "xmark.circle.fill") {
+                Button(
+                    "Clear search term and filters",
+                    systemImage: "xmark.circle.fill"
+                ) {
                     viewModel.clearTypeFilter()
                     viewModel.cancelSearch()
                 }
@@ -123,6 +126,7 @@ struct PokemonListView: View {
             }
         })
         .sheet(isPresented: $showFilterSheet) {
+            // Filter view
             VStack(alignment: .leading) {
                 HStack {
                     Text("Filters")
@@ -133,6 +137,7 @@ struct PokemonListView: View {
                         viewModel.clearTypeFilter()
                         showFilterSheet.toggle()
                     }
+                    .sensoryFeedback(.selection, trigger: viewModel.selectedFilterType)
                 }
                 Section {
                     HFlow {
@@ -148,6 +153,7 @@ struct PokemonListView: View {
                                     await viewModel.fetchPokemon(for: typeInfo)
                                 }
                             }
+                            .sensoryFeedback(.selection, trigger: viewModel.selectedFilterType)
                         }
                     }
                 } header: {
@@ -155,7 +161,6 @@ struct PokemonListView: View {
                         .font(
                             .system(
                                 .headline,
-                                design: .rounded,
                                 weight: .semibold
                             )
                         )
