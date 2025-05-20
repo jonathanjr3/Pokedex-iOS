@@ -74,10 +74,10 @@ struct PokemonDetailView: View {
                 HStack {
                     Image(
                         systemName: viewModel.isFavourite
-                            ? "heart.fill" : "heart"
+                            ? "star.fill" : "star"
                     )
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(viewModel.isFavourite ? .red : .gray)
+                    .foregroundStyle(viewModel.isFavourite ? .yellow : .gray)
                     .padding(8)
                     .background(.ultraThinMaterial, in: Circle())
                     .onTapGesture {
@@ -102,9 +102,7 @@ struct PokemonDetailView: View {
             .toolbarVisibility(.hidden, for: .tabBar)
             .task {
                 viewModel.setModelContext(modelContext)
-                if viewModel.pokemonDetail.id == -1 || viewModel.errorOccurred {
-                    await viewModel.fetchPokemonDetails()
-                }
+                await viewModel.fetchPokemonDetails()
             }
         }
     }
@@ -185,6 +183,7 @@ struct PokemonDetailView: View {
                             weight: .bold
                         )
                     )
+                    .minimumScaleFactor(0.01)
                     .foregroundStyle(.primary)
                 Text(
                     String(
@@ -251,7 +250,7 @@ struct PokemonDetailView: View {
                 Text(viewModel.pokemonDetail.description)
                     .font(.body)
                     .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: false)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .redacted(reason: viewModel.isLoading ? .placeholder : [])
@@ -284,15 +283,8 @@ struct PokemonDetailView: View {
                     )
                 }
             }
-            .redacted(
-                reason: viewModel.isLoading
-                    && viewModel.pokemonDetail.height == 0
-                    ? .placeholder : []
-            )
-            .shimmering(
-                active: viewModel.isLoading
-                    && viewModel.pokemonDetail.height == 0
-            )
+            .redacted(reason: viewModel.isLoading ? .placeholder : [])
+            .shimmering(active: viewModel.isLoading)
             // Base Stats Section
             SectionView(title: "Base Stats") {
                 VStack(spacing: 8) {

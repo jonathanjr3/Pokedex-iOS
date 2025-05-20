@@ -6,10 +6,22 @@
 //
 import OpenAPIRuntime
 
-struct MockPokemonAPIClient: APIProtocol {
+@MainActor
+final class MockPokemonAPIClient: APIProtocol {
+    var shouldThrowErrorOnPokemonList: Bool = false
+    var pokemonListCallCount: Int = 0
+    var shouldThrowErrorOnTypeList: Bool = false
+    var pokemonForElectricType: [Components.Schemas.PokemonSummary]? = nil
+    var shouldThrowErrorOnTypeRetrieve: Bool = false
+    var shouldThrowErrorOnPokemonRetrieve: Bool = false
+    var shouldThrowErrorOnSpeciesRetrieve: Bool = false
+
     func typeList(_ input: Operations.TypeList.Input) async throws
         -> Operations.TypeList.Output
     {
+        if shouldThrowErrorOnTypeList {
+            throw NetworkError.mockError(message: "Simulated typeList error")
+        }
         let mockTypes: [Components.Schemas.TypeSummary] = [
             .init(name: "normal", url: "/api/v2/type/1/"),
             .init(name: "fire", url: "/api/v2/type/10/"),
@@ -17,7 +29,11 @@ struct MockPokemonAPIClient: APIProtocol {
             .init(name: "grass", url: "/api/v2/type/12/"),
             .init(name: "electric", url: "/api/v2/type/13/"),
         ]
-        return .ok(.init(body: .json(.init(count: mockTypes.count, results: mockTypes))))
+        return .ok(
+            .init(
+                body: .json(.init(count: mockTypes.count, results: mockTypes))
+            )
+        )
     }
 
     func abilityRetrieve(_ input: Operations.AbilityRetrieve.Input) async throws
@@ -31,6 +47,11 @@ struct MockPokemonAPIClient: APIProtocol {
     func typeRetrieve(_ input: Operations.TypeRetrieve.Input) async throws
         -> Operations.TypeRetrieve.Output
     {
+        if shouldThrowErrorOnTypeRetrieve {
+            throw NetworkError.mockError(
+                message: "Simulated typeRetrieve error"
+            )
+        }
         var mockTypeDetail: Components.Schemas.TypeDetail
         let damageRelations = Components.Schemas.TypeDetail
             .DamageRelationsPayload(
@@ -71,6 +92,11 @@ struct MockPokemonAPIClient: APIProtocol {
     func pokemonSpeciesRetrieve(
         _ input: Operations.PokemonSpeciesRetrieve.Input
     ) async throws -> Operations.PokemonSpeciesRetrieve.Output {
+        if shouldThrowErrorOnSpeciesRetrieve {
+            throw NetworkError.mockError(
+                message: "Simulated pokemonSpeciesRetrieve error"
+            )
+        }
         let id = Int(input.path.id) ?? 1
         let flavorText = Components.Schemas.PokemonSpeciesFlavorText(
             flavorText:
@@ -117,6 +143,11 @@ struct MockPokemonAPIClient: APIProtocol {
     func pokemonRetrieve(_ input: Operations.PokemonRetrieve.Input) async throws
         -> Operations.PokemonRetrieve.Output
     {
+        if shouldThrowErrorOnPokemonRetrieve {
+            throw NetworkError.mockError(
+                message: "Simulated pokemonRetrieve error"
+            )
+        }
         let pokemonId = Int(input.path.id) ?? 1
         var typesArray: [Components.Schemas.PokemonDetail.TypesPayloadPayload] =
             [
@@ -147,7 +178,7 @@ struct MockPokemonAPIClient: APIProtocol {
                         order: pokemonId == 25 ? 35 : pokemonId,
                         weight: pokemonId == 25
                             ? 60 : (pokemonId == 1 ? 69 : 85),  // hectograms
-                        abilities: [],
+                        abilities: [.init(ability: .init(name: "", url: ""), isHidden: false, slot: 1)],
                         pastAbilities: [],
                         forms: [],
                         gameIndices: [],
@@ -160,7 +191,7 @@ struct MockPokemonAPIClient: APIProtocol {
                                 "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(pokemonId).png"
                         ),
                         cries: .init(latest: "", legacy: ""),
-                        stats: [],
+                        stats: [.init(baseStat: 2, effort: 2, stat: .init(name: "", url: ""))],
                         types: typesArray,
                         pastTypes: .init()
                     )
@@ -172,6 +203,10 @@ struct MockPokemonAPIClient: APIProtocol {
     func pokemonList(_ input: Operations.PokemonList.Input) async throws
         -> Operations.PokemonList.Output
     {
+        pokemonListCallCount += 1
+        if shouldThrowErrorOnPokemonList {
+            throw NetworkError.mockError(message: "Simulated pokemonList error")
+        }
         let bulbasaur = Components.Schemas.PokemonSummary(
             name: "Bulbasaur",
             url: "https://pokeapi.co/api/v2/pokemon/1/"

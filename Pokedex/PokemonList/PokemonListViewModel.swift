@@ -11,117 +11,72 @@ import SwiftUI
 
 @Observable
 final class PokemonListViewModel {
+    // MARK: - Published State
+    private(set) var isLoading: Bool = false
+    private(set) var isLoadingTypes: Bool = false
+    private(set) var isLoadingFilteredPokemon: Bool = false
+    private(set) var errorMessage: String? = nil
+
+    // Data sources
     private(set) var allPokemonSummaries: [Components.Schemas.PokemonSummary] =
         []
-    private(set) var searchResults: [PokemonListItem] = []
-    private(set) var isSearching: Bool = false
-    private(set) var isLoading: Bool = false
-    private(set) var errorMessage: String? = nil
     private(set) var allTypes: [PokemonTypeInfo] = []
-    private(set) var selectedFilterType: PokemonTypeInfo? = nil
-    private(set) var isLoadingTypes: Bool = false
 
-    var showNoSearchResults: Bool {
-        !isLoading && !isLoadingFilteredPokemon && displayedPokemonItems.isEmpty && (isSearching || selectedFilterType != nil)
-    }
+    // Filtering and Search State
     var searchQuery: String = ""
-    var displayedPokemonItems: [PokemonListItem] {
-        let sourceSummaries: [Components.Schemas.PokemonSummary]
+    private(set) var selectedFilterType: PokemonTypeInfo? = nil
+    private(set) var displayedPokemonItems: [PokemonListItem] = []
 
-        if isSearching && !searchQuery.isEmpty {
-            if selectedFilterType != nil {
-                _ = allPokemonSummaries.filter {
-                    summary in
-                    let lowercasedQuery = searchQuery.lowercased()
-                    return summary.name.lowercased().contains(lowercasedQuery)
-                        || (Utilities.extractID(from: summary.url)?.description
-                            .contains(lowercasedQuery) ?? false)
-                }
-                if !pokemonOfType.isEmpty {
-                    sourceSummaries = pokemonOfType.filter { summary in  // pokemonOfType holds PokemonSummary
-                        let lowercasedQuery = searchQuery.lowercased()
-                        return summary.name.lowercased().contains(
-                            lowercasedQuery
-                        )
-                            || (Utilities.extractID(from: summary.url)?
-                                .description.contains(lowercasedQuery) ?? false)
-                    }
-                } else {
-                    // If pokemonOfType is empty (e.g., filter selected but fetch failed, or no filter)
-                    // fall back to searching all summaries
-                    sourceSummaries = allPokemonSummaries.filter { summary in
-                        let lowercasedQuery = searchQuery.lowercased()
-                        return summary.name.lowercased().contains(
-                            lowercasedQuery
-                        )
-                            || (Utilities.extractID(from: summary.url)?
-                                .description.contains(lowercasedQuery) ?? false)
-                    }
-                }
-            } else {  // No type filter, just search
-                sourceSummaries = allPokemonSummaries.filter { summary in
-                    let lowercasedQuery = searchQuery.lowercased()
-                    return summary.name.lowercased().contains(lowercasedQuery)
-                        || (Utilities.extractID(from: summary.url)?.description
-                            .contains(lowercasedQuery) ?? false)
-                }
-            }
-            return sourceSummaries.map { PokemonListItem(pokemonSummary: $0) }
+    // Internal state for search status, distinct from searchQuery being non-empty
+    private(set) var isSearchActive: Bool = false
 
-        } else if selectedFilterType != nil {
-            // No search, just type filter. Use `pokemonOfType`.
-            return pokemonOfType.map { PokemonListItem(pokemonSummary: $0) }
-        } else {
-            // No search, no filter. Display all.
-            return allPokemonSummaries.map {
-                PokemonListItem(pokemonSummary: $0)
-            }
-        }
+    // MARK: - Computed Properties for UI State
+    var showNoResultsIndicator: Bool {
+        return !isLoading && !isLoadingFilteredPokemon && !isLoadingTypes
+            && displayedPokemonItems.isEmpty
+            && (isSearchActive || selectedFilterType != nil)
     }
 
-    private(set) var pokemonOfType: [Components.Schemas.PokemonSummary] = []
-    private(set) var isLoadingFilteredPokemon: Bool = false
-
+    // MARK: - Dependencies & Private State
     private let apiService: PokemonAPIService
-    private var allSummariesLoaded = false
-    @ObservationIgnored let queryChannel = AsyncChannel<String>()
+    private(set) var allSummariesLoaded = false
+    @ObservationIgnored let queryChannel = AsyncChannel<String>()  // For view's .debounce
+    private var pokemonOfType: [Components.Schemas.PokemonSummary] = [] // To store the result of a type filter
 
+    // MARK: - Initialization
     init(apiService: PokemonAPIService = .shared) {
         self.apiService = apiService
+        updateDisplayedPokemon()
     }
 
-    // Fetch all summaries for default list and search
+    // MARK: - Data Fetching
     func fetchAllPokemonSummaries() async {
-        guard !allSummariesLoaded else { return }
+        guard !allSummariesLoaded, !isLoading else { return }
         isLoading = true
         errorMessage = nil
         var allResults: [Components.Schemas.PokemonSummary] = []
-        let offset = 0
-        let pageSize = 2000
         do {
             let page = try await apiService.getPokemonList(
-                limit: pageSize,
-                offset: offset
+                limit: 2000,
+                offset: 0
             )
             if let results = page.results {
                 allResults.append(contentsOf: results)
             }
+            allPokemonSummaries = allResults
+            allSummariesLoaded = true
         } catch {
             errorMessage =
-                "Failed to load Pokémon: \(error.localizedDescription)"
+                "Failed to load Pokémon list: \(error.localizedDescription)"
             print("Error fetching all summaries: \(error)")
-            return
         }
-        allPokemonSummaries = allResults
-        allSummariesLoaded = true
         isLoading = false
+        updateDisplayedPokemon()
     }
 
-    // Fetch all types for the filter
     func fetchAllTypes() async {
         guard !isLoadingTypes && allTypes.isEmpty else { return }
         isLoadingTypes = true
-        errorMessage = nil
         do {
             let typeListResponse = try await apiService.getAllTypes(
                 limit: 100,
@@ -133,68 +88,96 @@ final class PokemonListViewModel {
                         let typeId = Utilities.extractID(from: typeSummary.url)
                     else { return nil }
                     return PokemonTypeInfo(
-                        name: typeSummary.name, typeId: typeId
+                        name: typeSummary.name,
+                        typeId: typeId
                     )
                 }
             }
         } catch {
-            print("Error fetching all types: \(error.localizedDescription)")
-            self.errorMessage =
-                "Failed to load pokemon types: \(error.localizedDescription)"
+            errorMessage =
+                "Failed to load Pokémon types: \(error.localizedDescription)"
+            print("Error fetching all types: \(error)")
         }
         isLoadingTypes = false
     }
 
-    // Fetch Pokémon for a selected type
     func fetchPokemon(for type: PokemonTypeInfo) async {
         selectedFilterType = type
         isLoadingFilteredPokemon = true
-        pokemonOfType.removeAll()
         errorMessage = nil
 
+        var fetchedPokemonForType: [Components.Schemas.PokemonSummary] = []
         do {
             let typeDetailResponse = try await apiService.getTypeDetails(
                 id: type.name.lowercased()
             )
-
-            self.pokemonOfType = typeDetailResponse.pokemon.compactMap {
-                guard let name = $0.pokemon?.name, let url = $0.pokemon?.url else { return nil }
+            fetchedPokemonForType = typeDetailResponse.pokemon.compactMap {
+                guard let name = $0.pokemon?.name, let url = $0.pokemon?.url
+                else { return nil }
                 return Components.Schemas.PokemonSummary(name: name, url: url)
             }
-
         } catch {
-            self.errorMessage =
+            errorMessage =
                 "Failed to load Pokémon for type \(type.name): \(error.localizedDescription)"
             print("Error fetching pokemon for type \(type.name): \(error)")
         }
         isLoadingFilteredPokemon = false
-    }
-    
-    func clearTypeFilter() {
-        selectedFilterType = nil
-        pokemonOfType.removeAll()
+        updateDisplayedPokemon(pokemonFetchedForType: fetchedPokemonForType)
     }
 
-    // Called by debounce
+    // MARK: - Filtering and Searching Logic
+
+    /// Central method to update `displayedPokemonItems` based on current search query and filter.
+    /// Call this after any state change that affects the list (data load, search, filter change).
+    private func updateDisplayedPokemon(
+        pokemonFetchedForType: [Components.Schemas.PokemonSummary]? = nil
+    ) {
+        var currentSource: [Components.Schemas.PokemonSummary]
+
+        if selectedFilterType != nil {
+            if let justFetchedForType = pokemonFetchedForType {
+                self.pokemonOfType = justFetchedForType
+                currentSource = self.pokemonOfType
+            } else {
+                // Filter already active, use existing pokemonOfType list
+                currentSource = self.pokemonOfType
+            }
+        } else {
+            // No type filter, use all Pokemon summaries.
+            currentSource = allPokemonSummaries
+        }
+
+        // Apply search if search query is active
+        if isSearchActive, !searchQuery.isEmpty {
+            let lowercasedQuery = searchQuery.lowercased()
+            currentSource = currentSource.filter { summary in
+                summary.name.lowercased().contains(lowercasedQuery)
+                    || (Utilities.extractID(from: summary.url)?.description
+                        .contains(lowercasedQuery) ?? false)
+            }
+        }
+
+        // Map to UI model
+        displayedPokemonItems = currentSource.map {
+            PokemonListItem(pokemonSummary: $0)
+        }
+    }
+
+    // Called by the view's .debounce mechanism or directly
     func performSearch(query: String) {
-        guard !query.isEmpty else {
-            isSearching = false
-            searchResults = []
-            return
-        }
-        isSearching = true
-        let lowercased = query.lowercased()
-        let filtered = allPokemonSummaries.filter { summary in
-            summary.name.lowercased().contains(lowercased)
-                || (Utilities.extractID(from: summary.url)?.description
-                    .contains(lowercased) ?? false)
-        }
-        searchResults = filtered.map { PokemonListItem(pokemonSummary: $0) }
+        isSearchActive = !query.isEmpty
+        updateDisplayedPokemon()
     }
 
     func cancelSearch() {
-        isSearching = false
         searchQuery = ""
-        searchResults = []
+        isSearchActive = false
+        updateDisplayedPokemon()
+    }
+
+    func clearTypeFilter() {
+        selectedFilterType = nil
+        pokemonOfType.removeAll()
+        updateDisplayedPokemon()
     }
 }

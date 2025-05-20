@@ -25,7 +25,7 @@ struct FavouritesListView: View {
                 if favourites.isEmpty {
                     ContentUnavailableView(
                         "No Favourites Yet",
-                        systemImage: "heart.slash",
+                        systemImage: "star.slash",
                         description: Text(
                             "Add Pokémon to your favourites to see them here."
                         )
