@@ -18,6 +18,7 @@ struct PokemonDetailView: View {
     @State private var viewModel: PokemonDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
 
     init(
         pokemonID: Int,
@@ -60,6 +61,7 @@ struct PokemonDetailView: View {
                 colors: viewModel.meshGradientColours,
                 background: Color.accentColor
             )
+            .opacity(colorScheme == .dark ? 0.8 : 1)
             .ignoresSafeArea()
 
             FancyScrollView {

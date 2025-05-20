@@ -14,10 +14,10 @@ struct PokemonListView: View {
     @State private var showFilterSheet: Bool = false
     @Namespace var animation
     @Environment(\.networkMonitor) private var networkMonitor
-    
-    private var currentDevice: UIUserInterfaceIdiom {
-        UIDevice.current.userInterfaceIdiom
-    }
+
+    private let gridColumns: [GridItem] = [
+        GridItem(.adaptive(minimum: 160), spacing: 16)
+    ]
 
     init(apiService: PokemonAPIService = .shared) {
         viewModel = PokemonListViewModel(apiService: apiService)
@@ -28,92 +28,132 @@ struct PokemonListView: View {
             VStack(spacing: 0) {
                 if !networkMonitor.isConnected {
                     NoInternetView()
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
-                List {
-                    ForEach(viewModel.displayedPokemonItems) { pokemonItem in
-                        NavigationLink {
-                            PokemonDetailView(
-                                pokemonID: pokemonItem.id,
-                                pokemonName: pokemonItem.name,
-                                animation: animation
-                            )
-                        } label: {
-                            PokemonListRow(
-                                pokemonItem: pokemonItem,
-                                animation: animation
-                            )
-                        }
-                    }
 
-                    if viewModel.isLoading || viewModel.isLoadingFilteredPokemon {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                                .padding()
-                            Spacer()
-                        }
-                    }
-
-                    if let errorMessage = viewModel.errorMessage,
+                ScrollView {
+                    if viewModel.displayedPokemonItems.isEmpty
+                        && (viewModel.isLoading
+                            || viewModel.isLoadingFilteredPokemon)
+                    {
+                        ProgressView("Catching 'em all...")
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 50)
+                    } else if let errorMessage = viewModel.errorMessage,
                         viewModel.displayedPokemonItems.isEmpty
+                            && !viewModel.isLoading
                     {
                         contentUnavailableRetryView(errorMessage: errorMessage)
-                    } else if viewModel.showNoSearchResults {
-                        ContentUnavailableView.search(text: viewModel.searchQuery)
-                            .listRowSeparator(.hidden)
-                        HStack {
-                            if !viewModel.searchQuery.isEmpty {
-                                Button("Clear search term", systemImage: "clear") {
-                                    viewModel.cancelSearch()
+                            .padding(.top, 50)
+                    } else if viewModel.showNoSearchResults
+                        && viewModel.displayedPokemonItems.isEmpty
+                    {
+                        VStack {
+                            ContentUnavailableView.search(
+                                text: viewModel.searchQuery
+                            )
+                            HStack {
+                                if !viewModel.searchQuery.isEmpty {
+                                    Button(
+                                        "Clear search",
+                                        systemImage: "xmark.circle"
+                                    ) {
+                                        viewModel.cancelSearch()
+                                    }
+                                }
+                                if viewModel.selectedFilterType != nil {
+                                    Button(
+                                        "Clear filter",
+                                        systemImage:
+                                            "line.3.horizontal.decrease.circle.fill"
+                                    ) {
+                                        viewModel.clearTypeFilter()
+                                    }
                                 }
                             }
-                            if viewModel.selectedFilterType != nil {
-                                Button("Clear filters", systemImage: "clear") {
-                                    viewModel.clearTypeFilter()
+                            .buttonStyle(.bordered)
+                            .padding(.top)
+                        }
+                        .padding(.top, 50)
+                    } else {
+                        // The Grid
+                        LazyVGrid(columns: gridColumns, spacing: 16) {
+                            ForEach(viewModel.displayedPokemonItems) {
+                                pokemonItem in
+                                NavigationLink {
+                                    PokemonDetailView(
+                                        pokemonID: pokemonItem.id,
+                                        pokemonName: pokemonItem.name,
+                                        animation: animation
+                                    )
+                                    .toolbar(.hidden, for: .tabBar)
+                                } label: {
+                                    PokemonGridCell(
+                                        pokemonItem: pokemonItem,
+                                        animation: animation
+                                    )
+                                    .matchedTransitionSource(
+                                        id: pokemonItem.id,
+                                        in: animation
+                                    )
                                 }
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
-                        .buttonStyle(.bordered)
-                    }
-                }
-                .searchable(
-                    text: $viewModel.searchQuery,
-                    placement: .navigationBarDrawer(displayMode: .always),
-                    prompt: "Search Pokémon by name or id"
-                )
-                .debounce(
-                    $viewModel.searchQuery,
-                    using: viewModel.queryChannel,
-                    for: .seconds(0.3),
-                    action: viewModel.performSearch
-                )
-                .onAppear {
-                    if viewModel.allPokemonSummaries.isEmpty {
-                        Task {
-                            await viewModel.fetchAllPokemonSummaries()
-                        }
-                    }
-                    if viewModel.allTypes.isEmpty {
-                        Task {
-                            await viewModel.fetchAllTypes()
+                        .padding(.horizontal)
+                        .padding(.top)
+
+                        if (viewModel.isLoading
+                            || viewModel.isLoadingFilteredPokemon)
+                            && !viewModel.displayedPokemonItems.isEmpty
+                        {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                                .padding()
                         }
                     }
                 }
-                .toolbar(content: {
-                    ToolbarItem {
+            }
+            .navigationTitle("Pokédex")
+            .searchable(
+                text: $viewModel.searchQuery,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: "Search Pokémon by name or ID"
+            )
+            .debounce(
+                $viewModel.searchQuery,
+                using: viewModel.queryChannel,
+                for: .seconds(0.3),
+                action: viewModel.performSearch
+            )
+            .onAppear {
+                if viewModel.allPokemonSummaries.isEmpty {
+                    Task {
+                        await viewModel.fetchAllPokemonSummaries()
+                    }
+                }
+                if viewModel.allTypes.isEmpty {
+                    Task {
+                        await viewModel.fetchAllTypes()
+                    }
+                }
+            }
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        showFilterSheet.toggle()
+                    } label: {
                         Label(
                             "Filter",
                             systemImage: "line.3.horizontal.decrease.circle"
                         )
-                        .onTapGesture {
-                            showFilterSheet.toggle()
-                        }
                     }
-                })
-                .sheet(isPresented: $showFilterSheet) {
-                    filterView
                 }
-            }.navigationTitle("Pokédex")
+            }
+            .sheet(isPresented: $showFilterSheet) {
+                filterView
+            }
+            .background(Color.gridListBackground)
         }
     }
 
@@ -128,6 +168,7 @@ struct PokemonListView: View {
                     viewModel.clearTypeFilter()
                     showFilterSheet.toggle()
                 }
+                .buttonStyle(.borderedProminent)
                 .sensoryFeedback(
                     .selection,
                     trigger: viewModel.selectedFilterType
@@ -171,8 +212,9 @@ struct PokemonListView: View {
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
     }
-    
-    private func contentUnavailableRetryView(errorMessage: String) -> some View {
+
+    private func contentUnavailableRetryView(errorMessage: String) -> some View
+    {
         ContentUnavailableView {
             Label(
                 "Something went wrong",
@@ -183,8 +225,7 @@ struct PokemonListView: View {
         } actions: {
             Button("Retry", systemImage: "arrow.clockwise") {
                 Task {
-                    if let filterType = viewModel.selectedFilterType
-                    {
+                    if let filterType = viewModel.selectedFilterType {
                         await viewModel.fetchPokemon(
                             for: filterType
                         )

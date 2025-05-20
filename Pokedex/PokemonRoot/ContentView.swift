@@ -16,7 +16,7 @@ struct ContentView: View {
             Tab("Browse", systemImage: "list.bullet", value: 0, role: .search) {
                 PokemonListView()
             }
-            Tab("Favourites", systemImage: "heart.fill", value: 1) {
+            Tab("Favourites", systemImage: "heart", value: 1) {
                 FavouritesListView()
             }
         }
