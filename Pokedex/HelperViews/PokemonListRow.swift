@@ -5,6 +5,8 @@
 //  Created by Jonathan Rajya on 18/05/2025.
 //
 import SwiftUI
+import Shimmer
+import Flow
 
 struct PokemonListRow: View {
     let pokemonItem: PokemonListItem
@@ -15,19 +17,24 @@ struct PokemonListRow: View {
             AsyncImage(url: pokemonItem.spriteURL) { phase in
                 switch phase {
                 case .empty:
-                    ProgressView()
-                        .frame(width: 70, height: 70)
+                    Image(systemName: "diamond.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 50)
+                        .padding(10)
+                        .shimmering()
                 case .success(let image):
-                    image.resizable()
-                        .aspectRatio(contentMode: .fit)
+                    image
+                        .resizable()
+                        .scaledToFit()
                         .frame(width: 70, height: 70)
                 case .failure:
                     Image(systemName: "questionmark.diamond")
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(width: 50, height: 50)
                         .padding(10)
-                        .foregroundColor(.gray)
+                        .foregroundStyle(.secondary)
                 @unknown default:
                     EmptyView()
                 }
@@ -39,9 +46,15 @@ struct PokemonListRow: View {
                     .font(.headline)
                 Text(String(format: "#%03d", pokemonItem.id))
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
+                if !pokemonItem.types.isEmpty {
+                    HFlow {
+                        ForEach(pokemonItem.types) { typeInfo in
+                            TypePill(typeInfo: typeInfo)
+                        }
+                    }
+                }
             }
-            Spacer()
         }
         .padding(.vertical, 4)
     }

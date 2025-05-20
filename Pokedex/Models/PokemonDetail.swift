@@ -22,12 +22,12 @@ struct PokemonDetail: Identifiable {
     var stats: [PokemonStat] = []
     var typeDefenses: PokemonTypeDefenses?
 
-    init(id: Int, name: String, height: Int?, weight: Int?) {
+    init(id: Int, name: String, height: Double?, weight: Double?) {
         self.id = id
         self.name = name.capitalized
         self.spriteURL = Utilities.getPokemonSpriteURL(forPokemonID: id)
-        self.height = Double(height ?? 0) / 10.0 // Convert to meters
-        self.weight = Double(weight ?? 0) / 10.0 // Convert to kg
+        self.height = (height ?? 0) / 10.0 // Convert to meters
+        self.weight = (weight ?? 0) / 10.0 // Convert to kg
     }
 }
 

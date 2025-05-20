@@ -13,7 +13,7 @@ struct GenderView: View {
         VStack(alignment: .leading) {
             Text("Gender")
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
             if let probabilities = genderProbabilities {
                 if probabilities.femalePercentage == nil
                     && probabilities.malePercentage == nil
@@ -26,13 +26,15 @@ struct GenderView: View {
                         if let female = probabilities.femalePercentage,
                             female > 0
                         {
-                            Image(systemName: "person.fill").foregroundColor(
-                                .pink
-                            )  // Or specific gender symbols
-                            Text(String(format: "%.0f%%", female))
+                            Label {
+                                Text(String(format: "%.0f%%", female))
+                            } icon: {
+                                Image(systemName: "person.fill")
+                                    .foregroundStyle(.pink)
+                            }
                         }
                         if let male = probabilities.malePercentage, male > 0 {
-                            Image(systemName: "person.fill").foregroundColor(
+                            Image(systemName: "person.fill").foregroundStyle(
                                 .blue
                             )
                             Text(String(format: "%.0f%%", male))
@@ -42,7 +44,7 @@ struct GenderView: View {
                     .fontWeight(.medium)
                 }
             } else {
-                Text("N/A")  // Or loading state
+                Text("N/A")
                     .font(.headline)
                     .fontWeight(.medium)
             }

@@ -12,14 +12,20 @@ struct TypePill: View {
     var shouldShowBackgroundColour: Bool = true
 
     var body: some View {
-        Label(typeInfo.name.capitalized, systemImage: typeInfo.typeSystemImage)
-            .font(.caption)
-            .fontWeight(.semibold)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(shouldShowBackgroundColour ? typeInfo.color.opacity(0.8) : Color.gray.opacity(0.2))
-            .foregroundColor(.white)
-            .clipShape(Capsule())
+        HStack(spacing: 6) {
+            Image(systemName: typeInfo.typeSystemImage)
+            Text(typeInfo.name.capitalized)
+        }
+        .font(.caption)
+        .fontWeight(.semibold)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(
+            shouldShowBackgroundColour
+                ? typeInfo.color.opacity(0.8) : Color.gray.opacity(0.2)
+        )
+        .foregroundStyle(.primary)
+        .clipShape(Capsule())
     }
 }
 
@@ -31,7 +37,7 @@ struct TypePillPlaceholder: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(Color.gray.opacity(0.3))
-            .foregroundColor(.secondary)
+            .foregroundStyle(.secondary)
             .clipShape(Capsule())
             .redacted(reason: .placeholder)
             .shimmering()

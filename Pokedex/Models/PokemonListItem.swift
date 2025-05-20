@@ -12,10 +12,10 @@ struct PokemonListItem: Identifiable, Hashable {
     let id: Int
     let name: String
     var spriteURL: URL?
-    var dominantColor: Color = .gray
+    var dominantColor: Color?
     var types: [PokemonTypeInfo] = []
 
-    init(pokemonSummary: Components.Schemas.PokemonSummary) {
+    init(pokemonSummary: Components.Schemas.PokemonSummary, dominantColor: Color? = nil, types: [PokemonTypeInfo] = []) {
         self.id = Utilities.extractID(from: pokemonSummary.url) ?? 0
         self.name = pokemonSummary.name.capitalized
         if let id = Utilities.extractID(from: pokemonSummary.url) {
@@ -23,6 +23,8 @@ struct PokemonListItem: Identifiable, Hashable {
         } else {
             self.spriteURL = nil
         }
+        self.dominantColor = dominantColor
+        self.types = types
     }
 
     static func example() -> PokemonListItem {

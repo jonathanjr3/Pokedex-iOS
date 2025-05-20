@@ -17,17 +17,20 @@ struct PokemonDetailView: View {
 
     @State private var viewModel: PokemonDetailViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
     init(
         pokemonID: Int,
         pokemonName: String,
         animation: Namespace.ID,
+        pokemonTypes: [PokemonTypeInfo] = [],
         apiService: PokemonAPIService = .shared
     ) {
         self.pokemonID = pokemonID
         self.pokemonName = pokemonName
         viewModel = PokemonDetailViewModel(
             pokemonId: pokemonID,
+            pokemonTypes: pokemonTypes,
             apiService: apiService
         )
         self.animation = animation
@@ -52,13 +55,12 @@ struct PokemonDetailView: View {
         ZStack(alignment: .topTrailing) {
             MeshGradient(
                 width: 3,
-                height: viewModel.meshGradientRows,
+                height: 3,
                 points: viewModel.meshGradientPoints,
                 colors: viewModel.meshGradientColours,
                 background: Color.accentColor
             )
             .ignoresSafeArea()
-            .animation(.smooth, value: viewModel.meshGradientPoints)
 
             FancyScrollView {
                 VStack(spacing: 0) {
@@ -122,7 +124,7 @@ struct PokemonDetailView: View {
                                 {
                                     Text("No types found.")
                                         .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                        .foregroundStyle(.secondary)
                                 } else {
                                     ForEach(
                                         viewModel.pokemonDetail.types
@@ -157,17 +159,8 @@ struct PokemonDetailView: View {
                                             vertical: true
                                         )
                                 }
-                                .redacted(
-                                    reason: viewModel.isLoading
-                                        && viewModel.pokemonDetail.description
-                                            .isEmpty
-                                        ? .placeholder : []
-                                )
-                                .shimmering(
-                                    active: viewModel.isLoading
-                                        && viewModel.pokemonDetail.description
-                                            .isEmpty
-                                )
+                                .redacted(reason: viewModel.isLoading ? .placeholder : [])
+                                .shimmering(active: viewModel.isLoading)
                                 // Physical Attributes Section
                                 SectionView(title: "Physical Attributes") {
                                     HStack {
@@ -220,7 +213,7 @@ struct PokemonDetailView: View {
                                         {
                                             Text("No abilities found.")
                                                 .font(.subheadline)
-                                                .foregroundColor(.secondary)
+                                                .foregroundStyle(.secondary)
                                         } else {
                                             ForEach(
                                                 viewModel.pokemonDetail
@@ -246,7 +239,7 @@ struct PokemonDetailView: View {
                                         {
                                             Text("No stats found.").font(
                                                 .subheadline
-                                            ).foregroundColor(.secondary)
+                                            ).foregroundStyle(.secondary)
                                         } else {
                                             ForEach(
                                                 viewModel.pokemonDetail.stats
@@ -268,7 +261,6 @@ struct PokemonDetailView: View {
                                     Text("Loading defenses...").font(.caption)
                                         .padding(.horizontal)
                                 }
-
                             }
                             .padding(.horizontal)
                         }
@@ -279,19 +271,37 @@ struct PokemonDetailView: View {
             }
             .scrollIndicators(.hidden)
 
-            Image(systemName: "xmark")
-                .font(.system(size: 16, weight: .bold))
-                .padding(10)
+            HStack {
+                Image(
+                    systemName: viewModel.isFavourite
+                        ? "heart.fill" : "heart"
+                )
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(viewModel.isFavourite ? .red : .gray)
+                .padding(8)
                 .background(.ultraThinMaterial, in: Circle())
                 .onTapGesture {
-                    dismiss()
+                    viewModel.toggleFavourite()
                 }
-                .padding([.trailing, .top])
+                .padding(.trailing)
+                .symbolEffect(.bounce, value: viewModel.isFavourite)
+                .sensoryFeedback(.success, trigger: viewModel.isFavourite)
+                Spacer()
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .bold))
+                    .padding(10)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .onTapGesture {
+                        dismiss()
+                    }
+            }
+            .frame(maxWidth: .infinity)
+            .padding([.horizontal, .top])
         }
-        .navigationTitle("")
-        .toolbar(removing: .title)
         .toolbarVisibility(.hidden, for: .navigationBar)
+        .toolbarVisibility(.hidden, for: .tabBar)
         .task {
+            viewModel.setModelContext(modelContext)
             if viewModel.pokemonDetail.id == -1 || viewModel.errorOccurred {
                 await viewModel.fetchPokemonDetails()
             }

@@ -17,7 +17,7 @@ struct DefenseCategoryView: View {
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                 HFlow {
                     ForEach(types) { type in
                         TypePill(typeInfo: type)

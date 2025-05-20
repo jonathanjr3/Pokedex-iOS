@@ -15,7 +15,7 @@ struct InfoItem: View {
         VStack(alignment: .leading) {
             Text(label)
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
             Label(value, systemImage: systemImage)
                 .font(.headline)
                 .fontWeight(.medium)

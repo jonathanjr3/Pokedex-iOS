@@ -1,3 +1,4 @@
+import SwiftData
 //
 //  PokemonDetailViewModel.swift
 //  Pokedex
@@ -27,20 +28,102 @@ final class PokemonDetailViewModel {
         .init(0, 0.5), .init(0.9, 0.3), .init(1, 0.5),
         .init(0, 1), .init(0.5, 1), .init(1, 1),
     ]
-    var meshGradientRows: Int {
-        gradientColours.count
-    }
+    private(set) var isFavourite: Bool = false
 
     private let pokemonId: Int
     private let apiService: PokemonAPIService
     private var gradientColours: [Color] = []
+    private var modelContext: ModelContext?
 
     init(
         pokemonId: Int,
+        modelContext: ModelContext? = nil,
+        pokemonTypes: [PokemonTypeInfo] = [],
         apiService: PokemonAPIService = .shared
     ) {
         self.pokemonId = pokemonId
+        self.modelContext = modelContext
         self.apiService = apiService
+        pokemonDetail.types = pokemonTypes
+
+        if modelContext != nil {
+            checkIfFavourite()
+        }
+    }
+
+    func setModelContext(_ context: ModelContext) {
+        if self.modelContext == nil {
+            self.modelContext = context
+            checkIfFavourite()
+        }
+    }
+
+    private func checkIfFavourite() {
+        guard let context = modelContext else { return }
+        let currentPokemonID = pokemonId
+        let fetchDescriptor = FetchDescriptor<FavouritePokemon>(
+            predicate: #Predicate { $0.id == currentPokemonID }
+        )
+        do {
+            let favourites = try context.fetch(fetchDescriptor)
+            isFavourite = !favourites.isEmpty
+        } catch {
+            print("Failed to fetch favourite status: \(error)")
+            isFavourite = false
+        }
+    }
+
+    func toggleFavourite() {
+        guard let context = modelContext else {
+            print("Model context not available.")
+            return
+        }
+
+        if isFavourite {
+            // Remove from favourites
+            let currentPokemonID = pokemonId
+            let fetchDescriptor = FetchDescriptor<FavouritePokemon>(
+                predicate: #Predicate { $0.id == currentPokemonID }
+            )
+            do {
+                if let favouriteToRemove = try context.fetch(fetchDescriptor)
+                    .first
+                {
+                    context.delete(favouriteToRemove)
+                    try context.save()
+                    isFavourite = false
+                    print("Removed \(pokemonDetail.name) from favourites.")
+                }
+            } catch {
+                print("Failed to remove favourite: \(error)")
+            }
+        } else {
+            // Add to favourites
+            guard pokemonDetail.id != -1, !pokemonDetail.name.isEmpty else {  // Ensure details are somewhat loaded
+                print(
+                    "Cannot favourite: Pokémon details not sufficiently loaded."
+                )
+                return
+            }
+
+            let newFavourite = FavouritePokemon(
+                id: pokemonDetail.id,
+                name: pokemonDetail.name,
+                spriteURLString: pokemonDetail.spriteURL?.absoluteString,
+                types: pokemonDetail.types.compactMap { $0.name.lowercased() }.joined(separator: ","),
+                dominantColorHex: gradientColours.first?.toHex(),
+                dateAdded: Date()
+            )
+
+            context.insert(newFavourite)
+            do {
+                try context.save()
+                isFavourite = true
+                print("Added \(pokemonDetail.name) to favourites.")
+            } catch {
+                print("Failed to save favourite: \(error)")
+            }
+        }
     }
 
     func fetchPokemonDetails() async {
@@ -61,14 +144,17 @@ final class PokemonDetailViewModel {
             var tempPokemonDetail = PokemonDetail(
                 id: apiPokemonDetail.id,
                 name: apiPokemonDetail.name.capitalized,
-                height: apiPokemonDetail.height,
-                weight: apiPokemonDetail.weight
+                height: Double(apiPokemonDetail.height ?? 0),
+                weight: Double(apiPokemonDetail.weight ?? 0)
             )
 
             // Fetch Pokemon Species Data (for description, gender, base color)
             let pokemonSpeciesDetail =
                 try await apiService.getSpeciesDetails(
-                    id: String(Utilities.extractID(from: apiPokemonDetail.species.url) ?? pokemonId)
+                    id: String(
+                        Utilities.extractID(from: apiPokemonDetail.species.url)
+                            ?? pokemonId
+                    )
                 )
 
             // Dominant colour from species for gradient
@@ -140,24 +226,7 @@ final class PokemonDetailViewModel {
                 )
             }
 
-            // Types & Type Defenses
-            var allTypeDetails: [Components.Schemas.TypeDetail] = []
-
-            for apiTypeSlot in apiPokemonDetail.types {
-                let typeId =
-                    if Utilities.extractID(from: apiTypeSlot._type.url) == nil {
-                        apiTypeSlot._type.name
-                    } else {
-                        String(
-                            Utilities.extractID(from: apiTypeSlot._type.url)!
-                        )
-                    }
-
-                let detailedType = try await apiService.getTypeDetails(
-                    id: String(typeId)
-                )
-                allTypeDetails.append(detailedType)
-            }
+            let allTypeDetails = try await fetchAllTypeDetails(pokemonDetails: apiPokemonDetail)
             tempPokemonDetail.typeDefenses = calculateTypeDefenses(
                 from: allTypeDetails
             )
@@ -166,22 +235,30 @@ final class PokemonDetailViewModel {
                 apiTypeSlot in
                 let typeID = Utilities.extractID(from: apiTypeSlot._type.url)
                 return PokemonTypeInfo(
-                    typeId: typeID ?? -1,
-                    name: apiTypeSlot._type.name
+                    name: apiTypeSlot._type.name,
+                    typeId: typeID ?? -1
                 )
             }
             tempPokemonDetail.types.forEach { typeInfo in
                 gradientColours.append(typeInfo.color)
             }
+            // Add app's accent color to gradient colours array to make it three rows
+            // Animation on MeshGradient is jarring when number of rows (or) columns changes
+            // This is done to make the animation on meshgradient less jarring
+            if gradientColours.count < 3 {
+                gradientColours.append(Color.accent)
+            }
             await MainActor.run { [tempPokemonDetail] in
-                meshGradientPoints = Utilities.generateRandomCoordinates(
-                    rows: gradientColours.count,
-                    columns: 3
-                )
-                meshGradientColours = generateColourArray(
-                    from: gradientColours
-                )
-                pokemonDetail = tempPokemonDetail
+                withAnimation(.smooth) {
+                    meshGradientPoints = Utilities.generateRandomCoordinates(
+                        rows: gradientColours.count,
+                        columns: 3
+                    )
+                    meshGradientColours = generateColourArray(
+                        from: gradientColours
+                    )
+                    pokemonDetail = tempPokemonDetail
+                }
             }
         } catch {
             errorMessage =
@@ -194,6 +271,42 @@ final class PokemonDetailViewModel {
         await MainActor.run {
             isLoading = false
         }
+    }
+    
+    /// Fetch all pokemon type details from api in parallel
+    /// - Parameter pokemonDetails: Pokemon details
+    /// - Returns: An array of type details
+    private func fetchAllTypeDetails(
+        pokemonDetails: Components.Schemas.PokemonDetail
+    ) async throws -> [Components.Schemas.TypeDetail] {
+        var allTypeDetails: [Components.Schemas.TypeDetail] = []
+        allTypeDetails.reserveCapacity(pokemonDetails.types.count)
+
+        try await withThrowingTaskGroup(of: Components.Schemas.TypeDetail.self)
+        { group in
+            for apiTypeSlot in pokemonDetails.types {
+                group.addTask {
+                    let typeIdString: String
+                    if let extractedId = Utilities.extractID(
+                        from: apiTypeSlot._type.url
+                    ) {
+                        typeIdString = String(extractedId)
+                    } else {
+                        typeIdString = apiTypeSlot._type.name  // Fallback to name if ID extraction fails
+                    }
+
+                    let detailedType = try await self.apiService.getTypeDetails(
+                        id: typeIdString
+                    )
+                    return detailedType
+                }
+            }
+
+            for try await detailedType in group {
+                allTypeDetails.append(detailedType)
+            }
+        }
+        return allTypeDetails
     }
 
     private func calculateTypeDefenses(
@@ -272,8 +385,8 @@ final class PokemonDetailViewModel {
         finalMultipliers.forEach { (typeName, multiplier) in
             if let typeId = allInvolvedTypeNames[typeName] {
                 let typeInfo = PokemonTypeInfo(
-                    typeId: typeId,
-                    name: typeName
+                    name: typeName,
+                    typeId: typeId
                 )
                 if multiplier >= 2.0 {
                     defenses.weakAgainst.append(typeInfo)
