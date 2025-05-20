@@ -282,15 +282,8 @@ struct PokemonDetailView: View {
                     )
                 }
             }
-            .redacted(
-                reason: viewModel.isLoading
-                    && viewModel.pokemonDetail.height == 0
-                    ? .placeholder : []
-            )
-            .shimmering(
-                active: viewModel.isLoading
-                    && viewModel.pokemonDetail.height == 0
-            )
+            .redacted(reason: viewModel.isLoading ? .placeholder : [])
+            .shimmering(active: viewModel.isLoading)
             // Base Stats Section
             SectionView(title: "Base Stats") {
                 VStack(spacing: 8) {
