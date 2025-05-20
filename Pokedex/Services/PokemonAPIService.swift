@@ -178,4 +178,5 @@ final actor PokemonAPIService {
 enum NetworkError: Error {
     case undocumentedResponse(statusCode: Int, message: String)
     case unknownError(message: String)
+    case mockError(message: String)
 }

@@ -33,7 +33,7 @@ final class PokemonDetailViewModel {
     ]
 
     // MARK: - Private State
-    private let pokemonId: Int
+    let pokemonId: Int
     private let apiService: PokemonAPIService
     private var sourceGradientColours: [Color] = []
     private var modelContext: ModelContext?

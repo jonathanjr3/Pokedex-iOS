@@ -39,7 +39,7 @@ final class PokemonListViewModel {
 
     // MARK: - Dependencies & Private State
     private let apiService: PokemonAPIService
-    private var allSummariesLoaded = false
+    private(set) var allSummariesLoaded = false
     @ObservationIgnored let queryChannel = AsyncChannel<String>()  // For view's .debounce
     private var pokemonOfType: [Components.Schemas.PokemonSummary] = [] // To store the result of a type filter
 
