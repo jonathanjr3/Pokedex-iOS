@@ -18,6 +18,7 @@ struct PokemonDetailView: View {
     @State private var viewModel: PokemonDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
 
     init(
         pokemonID: Int,
@@ -52,260 +53,313 @@ struct PokemonDetailView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            MeshGradient(
-                width: 3,
-                height: 3,
-                points: viewModel.meshGradientPoints,
-                colors: viewModel.meshGradientColours,
-                background: Color.accentColor
-            )
-            .ignoresSafeArea()
+        GeometryReader { geometryProxy in
+            ZStack(alignment: .topTrailing) {
+                MeshGradient(
+                    width: 3,
+                    height: 3,
+                    points: viewModel.meshGradientPoints,
+                    colors: viewModel.meshGradientColours,
+                    background: Color.accentColor
+                )
+                .opacity(colorScheme == .dark ? 0.8 : 1)
+                .ignoresSafeArea()
+                
+                if geometryProxy.size.height > geometryProxy.size.width {
+                    portraitLayout
+                } else {
+                    landscapeLayout
+                }
 
-            FancyScrollView {
-                VStack(spacing: 0) {
-                    AsyncImage(
-                        url: Utilities.getPokemonSpriteURL(
-                            forPokemonID: pokemonID
-                        )
-                    ) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                        case .success(let image):
-                            image.resizable()
-                                .scaledToFit()
-                        case .failure:
-                            Image(systemName: "questionmark.diamond.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .foregroundStyle(
-                                    Color.secondary.opacity(0.6)
-                                )
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                    .frame(width: 200, height: 200)
-                    .padding(.top, 40)
-                    .navigationTransition(
-                        .zoom(sourceID: pokemonID, in: animation)
+                HStack {
+                    Image(
+                        systemName: viewModel.isFavourite
+                            ? "heart.fill" : "heart"
                     )
-                    VStack(alignment: .leading, spacing: 24) {
-                        VStack(alignment: .center) {
-                            Text(pokemonName)
-                                .font(
-                                    .system(
-                                        size: 34,
-                                        weight: .bold
-                                    )
-                                )
-                                .foregroundStyle(.primary)
-                            Text(
-                                String(
-                                    format: "#%03d",
-                                    pokemonID
-                                )
-                            )
-                            .font(.title2)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.secondary)
-
-                            HFlow {
-                                if viewModel.isLoading
-                                    && viewModel.pokemonDetail.types
-                                        .isEmpty
-                                {
-                                    ForEach(0..<2) { _ in
-                                        TypePillPlaceholder()
-                                    }
-                                } else if viewModel.pokemonDetail.types
-                                    .isEmpty
-                                {
-                                    Text("No types found.")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                } else {
-                                    ForEach(
-                                        viewModel.pokemonDetail.types
-                                    ) { typeInfo in
-                                        TypePill(typeInfo: typeInfo)
-                                    }
-                                }
-                            }
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10).fill(
-                                .ultraThinMaterial)
-                        )
-                        .padding(.horizontal)
-
-                        if viewModel.errorOccurred {
-                            contentUnavailableView
-                                .background(.ultraThinMaterial)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .padding(.horizontal)
-                        } else {
-                            Group {
-                                // Description Section
-                                SectionView(title: "Description") {
-                                    Text(viewModel.pokemonDetail.description)
-                                        .font(.body)
-                                        .lineLimit(nil)
-                                        .fixedSize(
-                                            horizontal: false,
-                                            vertical: true
-                                        )
-                                }
-                                .redacted(reason: viewModel.isLoading ? .placeholder : [])
-                                .shimmering(active: viewModel.isLoading)
-                                // Physical Attributes Section
-                                SectionView(title: "Physical Attributes") {
-                                    HStack {
-                                        InfoItem(
-                                            label: "Height",
-                                            value: String(
-                                                format: "%.1f m",
-                                                viewModel.pokemonDetail.height
-                                            ),
-                                            systemImage: "ruler.fill"
-                                        )
-                                        Spacer()
-                                        InfoItem(
-                                            label: "Weight",
-                                            value: String(
-                                                format: "%.1f kg",
-                                                viewModel.pokemonDetail.weight
-                                            ),
-                                            systemImage: "scalemass.fill"
-                                        )
-                                        Spacer()
-                                        GenderView(
-                                            genderProbabilities: viewModel
-                                                .pokemonDetail
-                                                .genderProbabilities
-                                        )
-                                    }
-                                }
-                                .redacted(
-                                    reason: viewModel.isLoading
-                                        && viewModel.pokemonDetail.height == 0
-                                        ? .placeholder : []
-                                )
-                                .shimmering(
-                                    active: viewModel.isLoading
-                                        && viewModel.pokemonDetail.height == 0
-                                )
-                                // Abilities Section
-                                SectionView(title: "Abilities") {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        if viewModel.isLoading
-                                            && viewModel.pokemonDetail.abilities
-                                                .isEmpty
-                                        {
-                                            Text("Loading abilities...")
-                                                .font(.caption)
-                                                .shimmering()
-                                        } else if viewModel.pokemonDetail
-                                            .abilities.isEmpty
-                                        {
-                                            Text("No abilities found.")
-                                                .font(.subheadline)
-                                                .foregroundStyle(.secondary)
-                                        } else {
-                                            ForEach(
-                                                viewModel.pokemonDetail
-                                                    .abilities
-                                            ) { ability in
-                                                AbilityRow(ability: ability)
-                                            }
-                                        }
-                                    }
-                                }
-                                // Base Stats Section
-                                SectionView(title: "Base Stats") {
-                                    VStack(spacing: 8) {
-                                        if viewModel.isLoading
-                                            && viewModel.pokemonDetail.stats
-                                                .isEmpty
-                                        {
-                                            ForEach(0..<6) { _ in
-                                                StatRowPlaceholder()
-                                            }
-                                        } else if viewModel.pokemonDetail.stats
-                                            .isEmpty
-                                        {
-                                            Text("No stats found.").font(
-                                                .subheadline
-                                            ).foregroundStyle(.secondary)
-                                        } else {
-                                            ForEach(
-                                                viewModel.pokemonDetail.stats
-                                            ) { stat in
-                                                StatRow(stat: stat)
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Type Defenses Section
-                                if let defenses = viewModel.pokemonDetail
-                                    .typeDefenses
-                                {
-                                    SectionView(title: "Type Defenses") {
-                                        TypeDefensesView(defenses: defenses)
-                                    }
-                                } else if viewModel.isLoading {
-                                    Text("Loading defenses...").font(.caption)
-                                        .padding(.horizontal)
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(viewModel.isFavourite ? .red : .gray)
+                    .padding(8)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .onTapGesture {
+                        viewModel.toggleFavourite()
                     }
-                    .padding(.top)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.trailing)
+                    .symbolEffect(.bounce, value: viewModel.isFavourite)
+                    .sensoryFeedback(.success, trigger: viewModel.isFavourite)
+                    Spacer()
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .padding(10)
+                        .background(.ultraThinMaterial, in: Circle())
+                        .onTapGesture {
+                            dismiss()
+                        }
+                }
+                .frame(maxWidth: .infinity)
+                .padding([.horizontal, .top])
+            }
+            .toolbarVisibility(.hidden, for: .navigationBar)
+            .toolbarVisibility(.hidden, for: .tabBar)
+            .task {
+                viewModel.setModelContext(modelContext)
+                if viewModel.pokemonDetail.id == -1 || viewModel.errorOccurred {
+                    await viewModel.fetchPokemonDetails()
+                }
+            }
+        }
+    }
+
+    private var portraitLayout: some View {
+        FancyScrollView {
+            VStack(spacing: 0) {
+                headerSection(isLandscape: false)
+                VStack(alignment: .leading, spacing: 16) {
+                    if viewModel.errorOccurred {
+                        contentUnavailableView
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .padding(.horizontal)
+                    } else {
+                        detailsSection
+                    }
+                }
+                .padding(.top)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    private var landscapeLayout: some View {
+        HStack(spacing: 0) {
+            headerSection(isLandscape: true)
+                .frame(width: UIScreen.main.bounds.width * 0.35)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    detailsSection
                 }
             }
             .scrollIndicators(.hidden)
-
-            HStack {
-                Image(
-                    systemName: viewModel.isFavourite
-                        ? "heart.fill" : "heart"
+        }
+        .padding(.top, 60)
+    }
+    
+    private func headerSection(isLandscape: Bool) -> some View {
+        VStack(spacing: 0) {
+            AsyncImage(
+                url: Utilities.getPokemonSpriteURL(
+                    forPokemonID: pokemonID
                 )
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(viewModel.isFavourite ? .red : .gray)
-                .padding(8)
-                .background(.ultraThinMaterial, in: Circle())
-                .onTapGesture {
-                    viewModel.toggleFavourite()
+            ) { phase in
+                switch phase {
+                case .empty:
+                    ProgressView()
+                case .success(let image):
+                    image.resizable()
+                        .scaledToFit()
+                case .failure:
+                    Image(systemName: "questionmark.diamond.fill")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .foregroundStyle(
+                            Color.secondary.opacity(0.6)
+                        )
+                @unknown default:
+                    EmptyView()
                 }
-                .padding(.trailing)
-                .symbolEffect(.bounce, value: viewModel.isFavourite)
-                .sensoryFeedback(.success, trigger: viewModel.isFavourite)
-                Spacer()
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .bold))
-                    .padding(10)
-                    .background(.ultraThinMaterial, in: Circle())
-                    .onTapGesture {
-                        dismiss()
+            }
+            .if(!isLandscape, transform: { view in
+                view
+                    .frame(width: 200, height: 200)
+                    .padding(.top, 40)
+            })
+            
+            .navigationTransition(
+                .zoom(sourceID: pokemonID, in: animation)
+            )
+            VStack(alignment: .center) {
+                Text(pokemonName)
+                    .font(
+                        .system(
+                            size: 34,
+                            weight: .bold
+                        )
+                    )
+                    .foregroundStyle(.primary)
+                Text(
+                    String(
+                        format: "#%03d",
+                        pokemonID
+                    )
+                )
+                .font(.title2)
+                .fontWeight(.medium)
+                .foregroundStyle(.secondary)
+
+                HFlow {
+                    if viewModel.isLoading
+                        && viewModel.pokemonDetail.types
+                            .isEmpty
+                    {
+                        ForEach(0..<2) { _ in
+                            TypePillPlaceholder()
+                        }
+                    } else if viewModel.pokemonDetail.types
+                        .isEmpty
+                    {
+                        Text("No types found.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(
+                            viewModel.pokemonDetail.types
+                        ) { typeInfo in
+                            TypePill(typeInfo: typeInfo)
+                        }
                     }
+                }
             }
-            .frame(maxWidth: .infinity)
-            .padding([.horizontal, .top])
-        }
-        .toolbarVisibility(.hidden, for: .navigationBar)
-        .toolbarVisibility(.hidden, for: .tabBar)
-        .task {
-            viewModel.setModelContext(modelContext)
-            if viewModel.pokemonDetail.id == -1 || viewModel.errorOccurred {
-                await viewModel.fetchPokemonDetails()
+            .if(!isLandscape) { view in
+                view
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10).fill(
+                            .ultraThinMaterial
+                        )
+                    )
+                    .padding(.horizontal)
             }
         }
+        .if(isLandscape, transform: { view in
+            view
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 10).fill(
+                        .ultraThinMaterial
+                    )
+                )
+                .padding(.horizontal)
+        })
+    }
+
+    private var detailsSection: some View {
+        Group {
+            // Description Section
+            SectionView(title: "Description") {
+                Text(viewModel.pokemonDetail.description)
+                    .font(.body)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: false)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .redacted(reason: viewModel.isLoading ? .placeholder : [])
+            .shimmering(active: viewModel.isLoading)
+            // Physical Attributes Section
+            SectionView(title: "Physical Attributes") {
+                HStack {
+                    InfoItem(
+                        label: "Height",
+                        value: String(
+                            format: "%.1f m",
+                            viewModel.pokemonDetail.height
+                        ),
+                        systemImage: "ruler.fill"
+                    )
+                    Spacer()
+                    InfoItem(
+                        label: "Weight",
+                        value: String(
+                            format: "%.1f kg",
+                            viewModel.pokemonDetail.weight
+                        ),
+                        systemImage: "scalemass.fill"
+                    )
+                    Spacer()
+                    GenderView(
+                        genderProbabilities: viewModel
+                            .pokemonDetail
+                            .genderProbabilities
+                    )
+                }
+            }
+            .redacted(
+                reason: viewModel.isLoading
+                    && viewModel.pokemonDetail.height == 0
+                    ? .placeholder : []
+            )
+            .shimmering(
+                active: viewModel.isLoading
+                    && viewModel.pokemonDetail.height == 0
+            )
+            // Base Stats Section
+            SectionView(title: "Base Stats") {
+                VStack(spacing: 8) {
+                    if viewModel.isLoading
+                        && viewModel.pokemonDetail.stats
+                            .isEmpty
+                    {
+                        ForEach(0..<6) { _ in
+                            StatRowPlaceholder()
+                        }
+                    } else if viewModel.pokemonDetail.stats
+                        .isEmpty
+                    {
+                        Text("No stats found.").font(
+                            .subheadline
+                        ).foregroundStyle(.secondary)
+                    } else {
+                        ForEach(
+                            viewModel.pokemonDetail.stats
+                        ) { stat in
+                            StatRow(stat: stat)
+                        }
+                    }
+                }
+            }
+            
+            HFlow(alignment: .top, spacing: 20) {
+                // Type Defenses Section
+                if let defenses = viewModel.pokemonDetail
+                    .typeDefenses
+                {
+                    SectionView(title: "Type Defenses") {
+                        TypeDefensesView(defenses: defenses)
+                    }
+                } else if viewModel.isLoading {
+                    Text("Loading defenses...").font(.caption)
+                        .padding(.horizontal)
+                }
+                // Abilities Section
+                SectionView(title: "Abilities") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        if viewModel.isLoading
+                            && viewModel.pokemonDetail.abilities
+                                .isEmpty
+                        {
+                            Text("Loading abilities...")
+                                .font(.caption)
+                                .shimmering()
+                        } else if viewModel.pokemonDetail
+                            .abilities.isEmpty
+                        {
+                            Text("No abilities found.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(
+                                viewModel.pokemonDetail
+                                    .abilities
+                            ) { ability in
+                                AbilityRow(ability: ability)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal)
     }
 }
 
