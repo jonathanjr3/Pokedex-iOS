@@ -183,6 +183,7 @@ struct PokemonDetailView: View {
                             weight: .bold
                         )
                     )
+                    .minimumScaleFactor(0.01)
                     .foregroundStyle(.primary)
                 Text(
                     String(
