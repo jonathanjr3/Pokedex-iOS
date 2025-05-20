@@ -17,13 +17,13 @@ struct AbilityRow: View {
                 if ability.isHidden {
                     Text("(Hidden)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
             /*if let description = ability.effectDescription {
                 Text(description)
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundStyle(.gray)
                     .lineLimit(2)
             }*/
         }

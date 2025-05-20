@@ -1,3 +1,4 @@
+import SwiftData
 //
 //  PokemonDetailViewModel.swift
 //  Pokedex
@@ -5,7 +6,6 @@
 //  Created by Jonathan Rajya on 16/05/2025.
 //
 import SwiftUI
-import SwiftData
 
 @Observable
 final class PokemonDetailViewModel {
@@ -28,142 +28,100 @@ final class PokemonDetailViewModel {
         .init(0, 0.5), .init(0.9, 0.3), .init(1, 0.5),
         .init(0, 1), .init(0.5, 1), .init(1, 1),
     ]
-    private(set) var isFavorite: Bool = false
-    @ObservationIgnored private var modelContext: ModelContext?
+    private(set) var isFavourite: Bool = false
 
-    @ObservationIgnored private let pokemonId: Int
-    @ObservationIgnored private let apiService: PokemonAPIService
-    @ObservationIgnored private var gradientColours: [Color] = []
+    private let pokemonId: Int
+    private let apiService: PokemonAPIService
+    private var gradientColours: [Color] = []
+    private var modelContext: ModelContext?
 
     init(
         pokemonId: Int,
         modelContext: ModelContext? = nil,
+        pokemonTypes: [PokemonTypeInfo] = [],
         apiService: PokemonAPIService = .shared
     ) {
         self.pokemonId = pokemonId
-        self.apiService = apiService
-
-        if modelContext != nil {
-            checkIfFavorite()
-        }
-    }
-    
-    init(
-        favoritePokemon: FavouritePokemon,
-        modelContext: ModelContext? = nil
-    ) {
-        self.pokemonId = favoritePokemon.id
-        self.apiService = PokemonAPIService.shared
         self.modelContext = modelContext
-        var detail = PokemonDetail(
-            id: favoritePokemon.id,
-            name: favoritePokemon.name,
-            height: favoritePokemon.height,
-            weight: favoritePokemon.weight * 10
-        )
-        detail.description = favoritePokemon.flavorText ?? "No description available."
-        detail.types = favoritePokemon.types.map { typeName in
-            let typeId = Utilities.extractID(from: typeName) // This won't work well for name like "grass"
-                                                            // You'd need a name-to-ID map or store ID too
-            return PokemonTypeInfo(name: typeName, iconURL: nil /* Or try to get from Utilities */)
-        }
-        // dominantColor for mesh gradient from hex
-        if let hex = favoritePokemon.dominantColorHex, let color = Color(hex: hex) {
-            self.gradientColours = [color] // Or combine with type colors
-            // Initialize mesh gradient properties here based on this color
-        } else {
-            self.gradientColours = [.gray]
-        }
-        self.meshGradientPoints = Utilities.generateRandomCoordinates(rows: self.gradientColours.count, columns: 3)
-        self.meshGradientColours = generateColourArray(from: self.gradientColours)
+        self.apiService = apiService
+        pokemonDetail.types = pokemonTypes
 
-
-        detail.abilities = favoritePokemon.abilities?.map { PokemonAbility(name: $0, isHidden: false, effectDescription: "N/A (Offline)") } ?? []
-        detail.stats = favoritePokemon.stats?.map { PokemonStat(name: $0.name, baseStat: $0.baseStat) } ?? []
-
-        self.pokemonDetail = detail
-        self.isLoading = false // Not loading from network
-        self.isFavorite = true // It's a favorite, so this is true
-        
         if modelContext != nil {
-            checkIfFavorite() // Still useful to ensure UI consistency if toggled
+            checkIfFavourite()
         }
     }
 
     func setModelContext(_ context: ModelContext) {
         if self.modelContext == nil {
             self.modelContext = context
-            checkIfFavorite()
+            checkIfFavourite()
         }
     }
 
-    private func checkIfFavorite() {
+    private func checkIfFavourite() {
         guard let context = modelContext else { return }
+        let currentPokemonID = pokemonId
         let fetchDescriptor = FetchDescriptor<FavouritePokemon>(
-            predicate: #Predicate { $0.id == pokemonId }
+            predicate: #Predicate { $0.id == currentPokemonID }
         )
         do {
-            let favorites = try context.fetch(fetchDescriptor)
-            isFavorite = !favorites.isEmpty
+            let favourites = try context.fetch(fetchDescriptor)
+            isFavourite = !favourites.isEmpty
         } catch {
-            print("Failed to fetch favorite status: \(error)")
-            isFavorite = false
+            print("Failed to fetch favourite status: \(error)")
+            isFavourite = false
         }
     }
 
-    func toggleFavorite() {
+    func toggleFavourite() {
         guard let context = modelContext else {
-            print("Model context not available to toggle favorite.")
+            print("Model context not available.")
             return
         }
 
-        if isFavorite {
-            // Remove from favorites
+        if isFavourite {
+            // Remove from favourites
+            let currentPokemonID = pokemonId
             let fetchDescriptor = FetchDescriptor<FavouritePokemon>(
-                predicate: #Predicate { $0.id == pokemonId }
+                predicate: #Predicate { $0.id == currentPokemonID }
             )
             do {
-                if let favoriteToRemove = try context.fetch(fetchDescriptor)
+                if let favouriteToRemove = try context.fetch(fetchDescriptor)
                     .first
                 {
-                    context.delete(favoriteToRemove)
+                    context.delete(favouriteToRemove)
                     try context.save()
-                    isFavorite = false
-                    print("Removed \(pokemonDetail.name) from favorites.")
+                    isFavourite = false
+                    print("Removed \(pokemonDetail.name) from favourites.")
                 }
             } catch {
-                print("Failed to remove favorite: \(error)")
+                print("Failed to remove favourite: \(error)")
             }
         } else {
-            // Add to favorites - ensure all necessary data is in `self.pokemonDetail`
-            guard pokemonDetail.id != -1 else {  // Ensure details are loaded
-                print("Cannot favorite: Pokémon details not fully loaded.")
-                // Optionally, trigger a fetch if details are missing, then favorite
+            // Add to favourites
+            guard pokemonDetail.id != -1, !pokemonDetail.name.isEmpty else {  // Ensure details are somewhat loaded
+                print(
+                    "Cannot favourite: Pokémon details not sufficiently loaded."
+                )
                 return
             }
 
-            let newFavorite = FavouritePokemon(
+            let newFavourite = FavouritePokemon(
                 id: pokemonDetail.id,
                 name: pokemonDetail.name,
                 spriteURLString: pokemonDetail.spriteURL?.absoluteString,
-                types: pokemonDetail.types.map { $0.name.lowercased() },
+                types: pokemonDetail.types.compactMap { $0.name.lowercased() }.joined(separator: ","),
                 dominantColorHex: gradientColours.first?.toHex(),
-                height: pokemonDetail.height,
-                weight: pokemonDetail.weight,
-                abilities: pokemonDetail.abilities.map { $0.name },
-                stats: pokemonDetail.stats.map {
-                    FavoriteStat(name: $0.name, baseStat: $0.baseStat)
-                },
-                flavorText: pokemonDetail.description,
                 dateAdded: Date()
             )
-            context.insert(newFavorite)
+
+            context.insert(newFavourite)
             do {
                 try context.save()
-                isFavorite = true
-                print("Added \(pokemonDetail.name) to favorites.")
+                isFavourite = true
+                print("Added \(pokemonDetail.name) to favourites.")
             } catch {
-                print("Failed to save favorite: \(error)")
+                print("Failed to save favourite: \(error)")
             }
         }
     }
@@ -195,7 +153,8 @@ final class PokemonDetailViewModel {
                 try await apiService.getSpeciesDetails(
                     id: String(
                         Utilities.extractID(from: apiPokemonDetail.species.url)
-                            ?? pokemonId)
+                            ?? pokemonId
+                    )
                 )
 
             // Dominant colour from species for gradient
@@ -267,24 +226,7 @@ final class PokemonDetailViewModel {
                 )
             }
 
-            // Types & Type Defenses
-            var allTypeDetails: [Components.Schemas.TypeDetail] = []
-
-            for apiTypeSlot in apiPokemonDetail.types {
-                let typeId =
-                    if Utilities.extractID(from: apiTypeSlot._type.url) == nil {
-                        apiTypeSlot._type.name
-                    } else {
-                        String(
-                            Utilities.extractID(from: apiTypeSlot._type.url)!
-                        )
-                    }
-
-                let detailedType = try await apiService.getTypeDetails(
-                    id: String(typeId)
-                )
-                allTypeDetails.append(detailedType)
-            }
+            let allTypeDetails = try await fetchAllTypeDetails(pokemonDetails: apiPokemonDetail)
             tempPokemonDetail.typeDefenses = calculateTypeDefenses(
                 from: allTypeDetails
             )
@@ -293,8 +235,8 @@ final class PokemonDetailViewModel {
                 apiTypeSlot in
                 let typeID = Utilities.extractID(from: apiTypeSlot._type.url)
                 return PokemonTypeInfo(
-                    typeId: typeID ?? -1,
-                    name: apiTypeSlot._type.name
+                    name: apiTypeSlot._type.name,
+                    typeId: typeID ?? -1
                 )
             }
             tempPokemonDetail.types.forEach { typeInfo in
@@ -307,7 +249,6 @@ final class PokemonDetailViewModel {
                 gradientColours.append(Color.accent)
             }
             await MainActor.run { [tempPokemonDetail] in
-                checkIfFavorite()
                 withAnimation(.smooth) {
                     meshGradientPoints = Utilities.generateRandomCoordinates(
                         rows: gradientColours.count,
@@ -330,6 +271,42 @@ final class PokemonDetailViewModel {
         await MainActor.run {
             isLoading = false
         }
+    }
+    
+    /// Fetch all pokemon type details from api in parallel
+    /// - Parameter pokemonDetails: Pokemon details
+    /// - Returns: An array of type details
+    private func fetchAllTypeDetails(
+        pokemonDetails: Components.Schemas.PokemonDetail
+    ) async throws -> [Components.Schemas.TypeDetail] {
+        var allTypeDetails: [Components.Schemas.TypeDetail] = []
+        allTypeDetails.reserveCapacity(pokemonDetails.types.count)
+
+        try await withThrowingTaskGroup(of: Components.Schemas.TypeDetail.self)
+        { group in
+            for apiTypeSlot in pokemonDetails.types {
+                group.addTask {
+                    let typeIdString: String
+                    if let extractedId = Utilities.extractID(
+                        from: apiTypeSlot._type.url
+                    ) {
+                        typeIdString = String(extractedId)
+                    } else {
+                        typeIdString = apiTypeSlot._type.name  // Fallback to name if ID extraction fails
+                    }
+
+                    let detailedType = try await self.apiService.getTypeDetails(
+                        id: typeIdString
+                    )
+                    return detailedType
+                }
+            }
+
+            for try await detailedType in group {
+                allTypeDetails.append(detailedType)
+            }
+        }
+        return allTypeDetails
     }
 
     private func calculateTypeDefenses(
@@ -408,8 +385,8 @@ final class PokemonDetailViewModel {
         finalMultipliers.forEach { (typeName, multiplier) in
             if let typeId = allInvolvedTypeNames[typeName] {
                 let typeInfo = PokemonTypeInfo(
-                    typeId: typeId,
-                    name: typeName
+                    name: typeName,
+                    typeId: typeId
                 )
                 if multiplier >= 2.0 {
                     defenses.weakAgainst.append(typeInfo)

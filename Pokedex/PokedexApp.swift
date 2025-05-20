@@ -10,11 +10,12 @@ import SwiftData
 
 @main
 struct PokedexApp: App {
+    @State var networkMonitor = NetworkMonitor()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .fontDesign(.rounded)
+                .environment(networkMonitor)
         }
         .modelContainer(for: FavouritePokemon.self)
     }

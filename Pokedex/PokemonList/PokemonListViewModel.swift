@@ -21,6 +21,9 @@ final class PokemonListViewModel {
     private(set) var selectedFilterType: PokemonTypeInfo? = nil
     private(set) var isLoadingTypes: Bool = false
 
+    var showNoSearchResults: Bool {
+        !isLoading && !isLoadingFilteredPokemon && displayedPokemonItems.isEmpty && (isSearching || selectedFilterType != nil)
+    }
     var searchQuery: String = ""
     var displayedPokemonItems: [PokemonListItem] {
         let sourceSummaries: [Components.Schemas.PokemonSummary]
@@ -130,8 +133,7 @@ final class PokemonListViewModel {
                         let typeId = Utilities.extractID(from: typeSummary.url)
                     else { return nil }
                     return PokemonTypeInfo(
-                        typeId: typeId,
-                        name: typeSummary.name
+                        name: typeSummary.name, typeId: typeId
                     )
                 }
             }
