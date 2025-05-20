@@ -45,9 +45,7 @@ struct PokemonListView: View {
                     {
                         contentUnavailableRetryView(errorMessage: errorMessage)
                             .padding(.top, 50)
-                    } else if viewModel.showNoSearchResults
-                        && viewModel.displayedPokemonItems.isEmpty
-                    {
+                    } else if viewModel.showNoResultsIndicator {
                         VStack {
                             ContentUnavailableView.search(
                                 text: viewModel.searchQuery
@@ -91,10 +89,6 @@ struct PokemonListView: View {
                                     PokemonGridCell(
                                         pokemonItem: pokemonItem,
                                         animation: animation
-                                    )
-                                    .matchedTransitionSource(
-                                        id: pokemonItem.id,
-                                        in: animation
                                     )
                                 }
                                 .buttonStyle(PlainButtonStyle())

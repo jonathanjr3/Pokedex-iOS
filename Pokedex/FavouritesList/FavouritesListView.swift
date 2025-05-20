@@ -14,6 +14,7 @@ struct FavouritesListView: View {
         var favourites: [FavouritePokemon]
     @Namespace var animation
     @State private var selection = Set<FavouritePokemon.ID>()
+    @Environment(\.editMode) private var editMode
 
     var body: some View {
         NavigationStack {
@@ -65,7 +66,7 @@ struct FavouritesListView: View {
                                 EditButton()
                             }
                         }
-                        if !selection.isEmpty {
+                        if !selection.isEmpty && editMode?.wrappedValue.isEditing == true {
                             ToolbarItem(placement: .topBarLeading) {
                                 deleteButton
                             }

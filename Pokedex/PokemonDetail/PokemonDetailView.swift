@@ -102,9 +102,7 @@ struct PokemonDetailView: View {
             .toolbarVisibility(.hidden, for: .tabBar)
             .task {
                 viewModel.setModelContext(modelContext)
-                if viewModel.pokemonDetail.id == -1 || viewModel.errorOccurred {
-                    await viewModel.fetchPokemonDetails()
-                }
+                await viewModel.fetchPokemonDetails()
             }
         }
     }
@@ -251,7 +249,7 @@ struct PokemonDetailView: View {
                 Text(viewModel.pokemonDetail.description)
                     .font(.body)
                     .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: false)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .redacted(reason: viewModel.isLoading ? .placeholder : [])

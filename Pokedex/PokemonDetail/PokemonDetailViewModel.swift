@@ -9,6 +9,7 @@ import SwiftUI
 
 @Observable
 final class PokemonDetailViewModel {
+    // MARK: - Published State
     private(set) var pokemonDetail: PokemonDetail = .init(
         id: -1,
         name: "Bulbasaur",
@@ -18,6 +19,8 @@ final class PokemonDetailViewModel {
     private(set) var isLoading: Bool = false
     private(set) var errorMessage: String? = nil
     private(set) var errorOccurred: Bool = false
+    private(set) var isFavourite: Bool = false
+
     private(set) var meshGradientColours: [Color] = [
         .black, .black, .black,
         .blue, .blue, .blue,
@@ -28,11 +31,11 @@ final class PokemonDetailViewModel {
         .init(0, 0.5), .init(0.9, 0.3), .init(1, 0.5),
         .init(0, 1), .init(0.5, 1), .init(1, 1),
     ]
-    private(set) var isFavourite: Bool = false
 
+    // MARK: - Private State
     private let pokemonId: Int
     private let apiService: PokemonAPIService
-    private var gradientColours: [Color] = []
+    private var sourceGradientColours: [Color] = []
     private var modelContext: ModelContext?
 
     init(
@@ -47,10 +50,14 @@ final class PokemonDetailViewModel {
         pokemonDetail.types = pokemonTypes
 
         if modelContext != nil {
-            checkIfFavourite()
+            Task { @MainActor in
+                checkIfFavourite()
+            }
         }
     }
 
+    // MARK: - SwiftData Operations
+    @MainActor
     func setModelContext(_ context: ModelContext) {
         if self.modelContext == nil {
             self.modelContext = context
@@ -58,6 +65,7 @@ final class PokemonDetailViewModel {
         }
     }
 
+    @MainActor
     private func checkIfFavourite() {
         guard let context = modelContext else { return }
         let currentPokemonID = pokemonId
@@ -73,6 +81,7 @@ final class PokemonDetailViewModel {
         }
     }
 
+    @MainActor
     func toggleFavourite() {
         guard let context = modelContext else {
             print("Model context not available.")
@@ -110,8 +119,9 @@ final class PokemonDetailViewModel {
                 id: pokemonDetail.id,
                 name: pokemonDetail.name,
                 spriteURLString: pokemonDetail.spriteURL?.absoluteString,
-                types: pokemonDetail.types.compactMap { $0.name.lowercased() }.joined(separator: ","),
-                dominantColorHex: gradientColours.first?.toHex(),
+                types: pokemonDetail.types.compactMap { $0.name.lowercased() }
+                    .joined(separator: ","),
+                dominantColorHex: sourceGradientColours.first?.toHex(),
                 dateAdded: Date()
             )
 
@@ -126,6 +136,7 @@ final class PokemonDetailViewModel {
         }
     }
 
+    // MARK: - Data Fetching
     func fetchPokemonDetails() async {
         guard !isLoading else { return }
         if pokemonDetail.id == -1 || errorOccurred {
@@ -140,14 +151,6 @@ final class PokemonDetailViewModel {
                 id: String(pokemonId)
             )
 
-            // Assign to temporary local property to prevent updating UI
-            var tempPokemonDetail = PokemonDetail(
-                id: apiPokemonDetail.id,
-                name: apiPokemonDetail.name.capitalized,
-                height: Double(apiPokemonDetail.height ?? 0),
-                weight: Double(apiPokemonDetail.weight ?? 0)
-            )
-
             // Fetch Pokemon Species Data (for description, gender, base color)
             let pokemonSpeciesDetail =
                 try await apiService.getSpeciesDetails(
@@ -157,108 +160,17 @@ final class PokemonDetailViewModel {
                     )
                 )
 
-            // Dominant colour from species for gradient
-            gradientColours.append(
-                mapPokemonColorNameToSwiftUIColor(
-                    pokemonSpeciesDetail.color.name
-                )
+            // Fetch All Type Details in Parallel
+            let allTypeDetailsApi = try await fetchAllTypeDetails(pokemonDetails: apiPokemonDetail)
+
+            // Process and update state
+            processFetchedData(
+                apiDetail: apiPokemonDetail,
+                speciesDetail: pokemonSpeciesDetail,
+                allTypeDetailsApi: allTypeDetailsApi
             )
-            // Description (Flavour Text)
-            if let flavourTextEntry = pokemonSpeciesDetail.flavorTextEntries
-                .first(where: { $0.language.name == "en" })
-            {
-                tempPokemonDetail.description =
-                    flavourTextEntry.flavorText.replacingOccurrences(
-                        of: "\n",
-                        with: " "
-                    ).replacingOccurrences(of: "\u{000C}", with: " ")
-            }
-
-            // Gender Probability
-            if let genderRate = pokemonSpeciesDetail.genderRate {
-                if genderRate == -1 {  // Genderless
-                    tempPokemonDetail.genderProbabilities = GenderProbabilities(
-                        femalePercentage: nil,
-                        malePercentage: nil
-                    )
-                } else {
-                    let femaleChance = Double(genderRate) / 8.0 * 100.0
-                    tempPokemonDetail.genderProbabilities = GenderProbabilities(
-                        femalePercentage: femaleChance,
-                        malePercentage: 100.0 - femaleChance
-                    )
-                }
-            }
-
-            // Abilities
-            var uiAbilities: [PokemonAbility] = []
-            for apiAbilityContainer in apiPokemonDetail.abilities {
-                let abilityName = apiAbilityContainer.ability.name.capitalized
-                var effectDesc: String? = "Tap to load description."
-
-                // TODO: Implement ability description
-                // if let abilityUrl = apiAbility.url, let abilityId = Utilities.extractID(from: abilityUrl) {
-                //    do {
-                //        let detailedAbility = try await apiService.getAbilityDetail(id: String(abilityId)) // Requires getAbilityDetail in service
-                //        effectDesc = detailedAbility.effect_entries?.first(where: { $0.language?.name == "en" })?.short_effect
-                //    } catch {
-                //        print("Failed to fetch detail for ability \(abilityName): \(error)")
-                //    }
-                // }
-
-                uiAbilities.append(
-                    PokemonAbility(
-                        name: abilityName,
-                        isHidden: apiAbilityContainer.isHidden,
-                        effectDescription: effectDesc
-                    )
-                )
-            }
-            tempPokemonDetail.abilities = uiAbilities
-
-            // Base Stats
-            tempPokemonDetail.stats = apiPokemonDetail.stats.compactMap {
-                apiStat in
-                return PokemonStat(
-                    name: apiStat.stat.name.capitalized,
-                    baseStat: apiStat.baseStat,
-                    effort: apiStat.effort
-                )
-            }
-
-            let allTypeDetails = try await fetchAllTypeDetails(pokemonDetails: apiPokemonDetail)
-            tempPokemonDetail.typeDefenses = calculateTypeDefenses(
-                from: allTypeDetails
-            )
-
-            tempPokemonDetail.types = apiPokemonDetail.types.compactMap {
-                apiTypeSlot in
-                let typeID = Utilities.extractID(from: apiTypeSlot._type.url)
-                return PokemonTypeInfo(
-                    name: apiTypeSlot._type.name,
-                    typeId: typeID ?? -1
-                )
-            }
-            tempPokemonDetail.types.forEach { typeInfo in
-                gradientColours.append(typeInfo.color)
-            }
-            // Add app's accent color to gradient colours array to make it three rows
-            // Animation on MeshGradient is jarring when number of rows (or) columns changes
-            // This is done to make the animation on meshgradient less jarring
-            if gradientColours.count < 3 {
-                gradientColours.append(Color.accent)
-            }
-            await MainActor.run { [tempPokemonDetail] in
-                withAnimation(.smooth) {
-                    meshGradientPoints = Utilities.generateRandomCoordinates(
-                        rows: gradientColours.count,
-                        columns: 3
-                    )
-                    meshGradientColours = generateColourArray(
-                        from: gradientColours
-                    )
-                    pokemonDetail = tempPokemonDetail
-                }
+            await MainActor.run {
+                checkIfFavourite()
             }
         } catch {
             errorMessage =
@@ -272,7 +184,123 @@ final class PokemonDetailViewModel {
             isLoading = false
         }
     }
-    
+
+    /// Helper to process all fetched data and update the pokemonDetail model and gradient.
+    private func processFetchedData(
+        apiDetail: Components.Schemas.PokemonDetail,
+        speciesDetail: Components.Schemas.PokemonSpeciesDetail,
+        allTypeDetailsApi: [Components.Schemas.TypeDetail]
+    ) {
+        // Create a new PokemonDetail instance
+        var newDetail = PokemonDetail(
+            id: apiDetail.id,
+            name: apiDetail.name.capitalized,
+            height: Double(apiDetail.height ?? 0) / 10.0,  // Convert to meters
+            weight: Double(apiDetail.weight ?? 0) / 10.0  // Convert to kg
+        )
+        newDetail.spriteURL = Utilities.getPokemonSpriteURL(
+            forPokemonID: apiDetail.id
+        )
+
+        // Process Species Info
+        if let flavorTextEntry = speciesDetail.flavorTextEntries.first(where: {
+            $0.language.name == "en"
+        }) {
+            newDetail.description = flavorTextEntry.flavorText
+                .replacingOccurrences(of: "\n", with: " ")
+                .replacingOccurrences(of: "\u{000C}", with: " ")
+        }
+        if let genderRate = speciesDetail.genderRate {
+            newDetail.genderProbabilities = calculateGenderProbabilities(
+                genderRate: genderRate
+            )
+        }
+
+        // Process Abilities
+        newDetail.abilities = apiDetail.abilities.map { apiAbilityContainer in
+            PokemonAbility(
+                name: apiAbilityContainer.ability.name.capitalized,
+                isHidden: apiAbilityContainer.isHidden,
+                effectDescription: "Tap to load description."  // TODO: Future enhancement
+            )
+        }
+
+        // Process Base Stats
+        newDetail.stats = apiDetail.stats.compactMap { apiStat in
+            PokemonStat(
+                name: apiStat.stat.name.capitalized,
+                baseStat: apiStat.baseStat,
+                effort: apiStat.effort
+            )
+        }
+
+        // Process Types and Update Source Gradient Colors
+        var currentSourceGradientColors: [Color] = []
+        currentSourceGradientColors.append(
+            mapPokemonColorNameToSwiftUIColor(speciesDetail.color.name)
+        )
+
+        newDetail.types = apiDetail.types.compactMap { apiTypeSlot in
+            let typeID = Utilities.extractID(from: apiTypeSlot._type.url) ?? -1
+            let typeInfo = PokemonTypeInfo(
+                name: apiTypeSlot._type.name,
+                typeId: typeID
+            )
+            currentSourceGradientColors.append(typeInfo.color)  // Add type color to gradient
+            return typeInfo
+        }
+
+        // Ensure at least 3 base colors for the mesh gradient (for 3 rows)
+        // Add app's accent color to gradient colours array to make it three rows
+        // Animation on MeshGradient is jarring when number of rows (or) columns changes
+        // This is done to make the animation on meshgradient less jarring
+        while currentSourceGradientColors.count < 3
+            && currentSourceGradientColors.count > 0
+        {
+            // If 1 color, add accent and blue. If 2, add accent.
+            if currentSourceGradientColors.count == 1 {
+                currentSourceGradientColors.append(Color.accentColor)
+            }
+            currentSourceGradientColors.append(Color.blue.opacity(0.5))  // Use a less prominent color
+        }
+        if currentSourceGradientColors.isEmpty {  // Fallback if no colors found
+            currentSourceGradientColors = [.blue, .green, .accentColor]
+        }
+
+        sourceGradientColours = currentSourceGradientColors
+
+        // Process Type Defenses
+        newDetail.typeDefenses = calculateTypeDefenses(from: allTypeDetailsApi)
+
+        // Update the main pokemonDetail and gradient with animation
+        Task { @MainActor in
+            withAnimation(.smooth(duration: 0.5)) {
+                pokemonDetail = newDetail
+                meshGradientPoints = Utilities.generateRandomCoordinates(
+                    rows: 3,
+                    columns: 3
+                )
+                meshGradientColours = generateColourArray(from: sourceGradientColours)
+            }
+        }
+    }
+
+    private func calculateGenderProbabilities(genderRate: Int)
+        -> GenderProbabilities?
+    {
+        if genderRate == -1 {
+            return GenderProbabilities(
+                femalePercentage: nil,
+                malePercentage: nil
+            )
+        }
+        let femaleChance = Double(genderRate) / 8.0 * 100.0
+        return GenderProbabilities(
+            femalePercentage: femaleChance,
+            malePercentage: 100.0 - femaleChance
+        )
+    }
+
     /// Fetch all pokemon type details from api in parallel
     /// - Parameter pokemonDetails: Pokemon details
     /// - Returns: An array of type details
