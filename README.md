@@ -1,17 +1,18 @@
 # Pokedex-iOS
-
 A native iOS app to browse Pokémon, view their details, and store a list of favourites on your device.
 
 ## Features
-
 - Browse a list of Pokemon
 - View detailed information about each Pokemon
 - Search for Pokemons using name or ID
 - Filter Pokemons based on their type (Fire, Ice, Water etc.)
 - Add and manage your favourite Pokémon using SwiftData
 
-## Requirements
+## API Client
+- Generated API client using [Swift OpenAPI Generator Plugin](https://github.com/apple/swift-openapi-generator) and the `openapi.yml` file available from [PokeAPI github repository](https://github.com/PokeAPI/pokeapi/)
+- I made some modifications in the schema definitions of pokeapi's `openapi.yml` since they were incorrect. Eg. Some properties were null in the response but stated as required in the schema definition. 
 
+## Requirements
 - iOS 18.0+
 - Xcode 16.4+
 - Swift 6.0+
