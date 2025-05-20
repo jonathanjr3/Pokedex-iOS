@@ -261,7 +261,7 @@ final class PokemonDetailViewModel {
             if currentSourceGradientColors.count == 1 {
                 currentSourceGradientColors.append(Color.accentColor)
             }
-            currentSourceGradientColors.append(Color.blue.opacity(0.5))  // Use a less prominent color
+            currentSourceGradientColors.append(Color.accent)  // Use a less prominent color
         }
         if currentSourceGradientColors.isEmpty {  // Fallback if no colors found
             currentSourceGradientColors = [.blue, .green, .accentColor]

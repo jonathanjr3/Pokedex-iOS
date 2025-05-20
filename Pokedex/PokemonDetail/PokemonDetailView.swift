@@ -74,10 +74,10 @@ struct PokemonDetailView: View {
                 HStack {
                     Image(
                         systemName: viewModel.isFavourite
-                            ? "heart.fill" : "heart"
+                            ? "star.fill" : "star"
                     )
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(viewModel.isFavourite ? .red : .gray)
+                    .foregroundStyle(viewModel.isFavourite ? .yellow : .gray)
                     .padding(8)
                     .background(.ultraThinMaterial, in: Circle())
                     .onTapGesture {

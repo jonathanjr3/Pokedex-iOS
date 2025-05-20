@@ -14,6 +14,7 @@ struct PokemonListView: View {
     @State private var showFilterSheet: Bool = false
     @Namespace var animation
     @Environment(\.networkMonitor) private var networkMonitor
+    @FocusState private var focusSearchField: Bool
 
     private let gridColumns: [GridItem] = [
         GridItem(.adaptive(minimum: 160), spacing: 16)
@@ -114,6 +115,9 @@ struct PokemonListView: View {
                 placement: .navigationBarDrawer(displayMode: .always),
                 prompt: "Search Pokémon by name or ID"
             )
+            .searchFocused($focusSearchField)
+            // This is required to hide navigation bar in details view when search is active
+            .searchPresentationToolbarBehavior(.avoidHidingContent)
             .debounce(
                 $viewModel.searchQuery,
                 using: viewModel.queryChannel,
@@ -131,7 +135,18 @@ struct PokemonListView: View {
                         await viewModel.fetchAllTypes()
                     }
                 }
+                if let action = Utilities.quickActionManager.selectedAction {
+                    handleQuickAction(action: action)
+                }
             }
+            .onChange(
+                of: Utilities.quickActionManager.selectedAction,
+                { oldValue, newValue in
+                    if let action = newValue {
+                        handleQuickAction(action: action)
+                    }
+                }
+            )
             .toolbar {
                 ToolbarItem {
                     Button {
@@ -149,6 +164,12 @@ struct PokemonListView: View {
             }
             .background(Color.gridListBackground)
         }
+    }
+    
+    private func handleQuickAction(action: QuickActionType) {
+        guard action == .search else { return }
+        focusSearchField = true
+        Utilities.quickActionManager.selectedAction = nil
     }
 
     private var filterView: some View {

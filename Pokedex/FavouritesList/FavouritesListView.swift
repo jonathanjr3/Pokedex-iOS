@@ -14,7 +14,6 @@ struct FavouritesListView: View {
         var favourites: [FavouritePokemon]
     @Namespace var animation
     @State private var selection = Set<FavouritePokemon.ID>()
-    @Environment(\.editMode) private var editMode
 
     var body: some View {
         NavigationStack {
@@ -26,7 +25,7 @@ struct FavouritesListView: View {
                 if favourites.isEmpty {
                     ContentUnavailableView(
                         "No Favourites Yet",
-                        systemImage: "heart.slash",
+                        systemImage: "star.slash",
                         description: Text(
                             "Add Pokémon to your favourites to see them here."
                         )
@@ -66,7 +65,7 @@ struct FavouritesListView: View {
                                 EditButton()
                             }
                         }
-                        if !selection.isEmpty && editMode?.wrappedValue.isEditing == true {
+                        if !selection.isEmpty {
                             ToolbarItem(placement: .topBarLeading) {
                                 deleteButton
                             }

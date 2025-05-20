@@ -139,4 +139,6 @@ struct Utilities {
         default: return "questionmark.app"
         }
     }
+    
+    static let quickActionManager: QuickActionManager = QuickActionManager()
 }
