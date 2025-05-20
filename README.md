@@ -7,6 +7,7 @@ A native iOS app to browse Pokémon, view their details, and store a list of fav
 - Search for Pokemons using name or ID
 - Filter Pokemons based on their type (Fire, Ice, Water etc.)
 - Add and manage your favourite Pokémon using SwiftData
+- Supports landscape orientation. (iPhone and iPad)
 
 ## API Client
 - Generated API client using [Swift OpenAPI Generator Plugin](https://github.com/apple/swift-openapi-generator) and the `openapi.yml` file available from [PokeAPI github repository](https://github.com/PokeAPI/pokeapi/)
