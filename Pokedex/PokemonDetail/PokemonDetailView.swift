@@ -84,8 +84,8 @@ struct PokemonDetailView: View {
                         viewModel.toggleFavourite()
                     }
                     .padding(.trailing)
-                    .symbolEffect(.bounce, value: viewModel.isFavourite)
-                    .sensoryFeedback(.success, trigger: viewModel.isFavourite)
+                    .symbolEffect(.bounce, value: viewModel.togglingFavourite)
+                    .sensoryFeedback(.success, trigger: viewModel.togglingFavourite)
                     Spacer()
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .bold))
