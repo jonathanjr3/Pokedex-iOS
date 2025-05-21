@@ -76,19 +76,18 @@ struct PokemonDetailView: View {
                         systemName: viewModel.isFavourite
                             ? "star.fill" : "star"
                     )
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(viewModel.isFavourite ? .yellow : .gray)
+                    .font(.system(.body, design: .rounded, weight: .bold))
+                    .foregroundStyle(viewModel.isFavourite ? .yellow : .primary)
                     .padding(8)
                     .background(.ultraThinMaterial, in: Circle())
                     .onTapGesture {
                         viewModel.toggleFavourite()
                     }
-                    .padding(.trailing)
                     .symbolEffect(.bounce, value: viewModel.togglingFavourite)
                     .sensoryFeedback(.success, trigger: viewModel.togglingFavourite)
                     Spacer()
                     Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.system(.body, design: .rounded, weight: .bold))
                         .padding(10)
                         .background(.ultraThinMaterial, in: Circle())
                         .onTapGesture {
