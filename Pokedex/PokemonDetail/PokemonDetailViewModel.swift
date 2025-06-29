@@ -20,6 +20,7 @@ final class PokemonDetailViewModel {
     private(set) var errorMessage: String? = nil
     private(set) var errorOccurred: Bool = false
     private(set) var isFavourite: Bool = false
+    private(set) var togglingFavourite: Bool = false
 
     private(set) var meshGradientColours: [Color] = [
         .black, .black, .black,
@@ -101,6 +102,7 @@ final class PokemonDetailViewModel {
                     context.delete(favouriteToRemove)
                     try context.save()
                     isFavourite = false
+                    togglingFavourite.toggle() // Value doesn't matter as it's only used to trigger haptics and symbolEffect
                     print("Removed \(pokemonDetail.name) from favourites.")
                 }
             } catch {
@@ -129,6 +131,7 @@ final class PokemonDetailViewModel {
             do {
                 try context.save()
                 isFavourite = true
+                togglingFavourite.toggle() // Value doesn't matter as it's only used to trigger haptics and symbolEffect
                 print("Added \(pokemonDetail.name) to favourites.")
             } catch {
                 print("Failed to save favourite: \(error)")
